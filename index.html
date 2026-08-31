@@ -211,21 +211,62 @@
     document.getElementById('logout-btn').onclick = deactivateIdentity;
 
     // --- NETWORK PROTOCOL ---
-    async function broadcast(targetRoom, payload) {
+    async function broadcast(targetRoom, payload, statusElId = null) {
       if(!currentKeypair) return alert("Login required.");
+      
+      const statusEl = statusElId ? document.getElementById(statusElId) : null;
+      if (statusEl) {
+        statusEl.className = "text-sm mt-3 text-center text-yellow-600 font-bold";
+        statusEl.innerText = "Broadcasting to network...";
+      }
+
       payload.name = currentName;
       const msgStr = JSON.stringify(payload);
       const sig = bytesToBase64(nacl.sign.detached(new TextEncoder().encode(msgStr), currentKeypair.secretKey));
       const url = `${HOST}/${targetRoom}/say/did-${currentDid.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify({ payload, signature: sig, did: currentDid }))}`;
-      await fetch(url);
-      triggerPoll();
+      
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(await res.text());
+
+        if (statusEl) {
+          statusEl.className = "text-sm mt-3 text-center text-green-600 font-bold";
+          statusEl.innerText = "✅ Task Broadcasted Successfully!";
+          setTimeout(() => {
+            statusEl.innerText = "";
+          }, 4000);
+        }
+        triggerPoll();
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = "text-sm mt-3 text-center text-red-600 font-bold";
+          statusEl.innerText = "Failed to broadcast: " + err.message;
+        } else {
+          alert("Failed to broadcast: " + err.message);
+        }
+      }
     }
 
     // --- BAZAAR ACTIONS ---
-    document.getElementById('post-btn').onclick = () => {
-      const need = document.getElementById('task-need').value;
-      const offer = document.getElementById('task-offer').value;
-      broadcast('bazaar', { type: "TASK_OFFER", task_id: "task-" + Date.now(), need, offer, author: currentDid });
+    document.getElementById('post-btn').onclick = async () => {
+      const needInput = document.getElementById('task-need');
+      const offerInput = document.getElementById('task-offer');
+      const need = needInput.value.trim();
+      const offer = offerInput.value.trim();
+
+      if(!need || !offer) return alert("Please fill out both Need and Offer fields.");
+
+      // Clear the input fields immediately so double-clicks don't re-post
+      needInput.value = "";
+      offerInput.value = "";
+
+      await broadcast('bazaar', { 
+        type: "TASK_OFFER", 
+        task_id: "task-" + Date.now(), 
+        need, 
+        offer, 
+        author: currentDid 
+      }, 'post-status');
     };
 
     document.getElementById('live-stream').addEventListener('click', (e) => {
