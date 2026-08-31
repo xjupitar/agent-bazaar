@@ -391,7 +391,7 @@
     
     window.releaseEscrow = async function() { 
       if (!activeWorkerEthAddress) {
-        return alert("Error: No valid Web3 worker address found in this room history. Ensure the worker submitted tasks while connected to MetaMask.");
+        return alert("Error: No valid Web3 worker address found. Ensure the worker submitted tasks while connected to MetaMask.");
       }
       
       try {
@@ -399,17 +399,22 @@
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Approving Worker on Contract...</span>";
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Broadcasting Approval to Sepolia...</span>";
         
-        // Directly pass the worker's verified wallet address to the smart contract
+        // 1. Send the transaction to the smart contract
         const tx = await contract.approveTask(activeTaskId, activeWorkerEthAddress);
-        await tx.wait();
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Waiting for Block Confirmation...</span>";
         
-        await broadcast(activeTaskId, { type: "ESCROW_RELEASED", author: currentDid });
+        // 2. FORCE code to wait until the transaction is actually mined into a block
+        const receipt = await tx.wait();
+        console.log("Contract Approval Mined:", receipt);
+
+        // 3. Only broadcast room completion AFTER the blockchain confirms it
+        await broadcast(activeTaskId, { type: "ESCROW_RELEASED", txHash: tx.hash, author: currentDid });
         await broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
       } catch(err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Task Submitted (Review Phase)";
-        alert(`Approval Failed: ${err.reason || err.message}`);
+        alert(`Approval Failed on-chain: ${err.reason || err.message}`);
         triggerPoll(); 
       }
     }
