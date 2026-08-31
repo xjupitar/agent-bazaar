@@ -432,9 +432,14 @@
         if (!hasData) streamDiv.innerHTML = `<span class="text-gray-500 text-sm">No formatted data found.</span>`;
         if (activeRoom !== 'bazaar') streamDiv.scrollTop = streamDiv.scrollHeight;
       } catch (err) {
-        streamDiv.innerHTML = `<span class="text-red-500">Error: ${err.message}</span>`;
+        // If the screen is already showing tasks, just ignore the error and wait for the next poll.
+        // Only show the error if the feed is completely empty.
+        if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Fetching")) {
+          streamDiv.innerHTML = `<span class="text-red-500">Network hiccup: ${err.message}. Retrying...</span>`;
+        } else {
+          console.warn("Transient polling error suppressed:", err.message);
+        }
       }
-    }
 
     if(document.getElementById('search-input')) document.getElementById('search-input').addEventListener('input', triggerPoll);
     
