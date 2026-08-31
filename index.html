@@ -430,9 +430,10 @@
         let state = "AWAITING_FUNDS";
         let voteRelease = new Set();
         let voteBurn = new Set();
-        activeWorkerDid = null;
+        let submittedLink = "";
 
-        lines.reverse().forEach(line => {
+        // Process in true chronological order (oldest to newest)
+        lines.forEach(line => {
           try {
             const jStart = line.indexOf('{');
             if (jStart === -1) return; 
@@ -459,8 +460,13 @@
               streamDiv.appendChild(el);
             } 
             else if (activeRoom !== 'bazaar') {
+              // Chronological State Progression
               if (p.payload.type === 'ESCROW_FUNDED') state = "FUNDED";
-              if (p.payload.type === 'TASK_SUBMITTED') { state = "SUBMITTED"; activeWorkerDid = p.did; }
+              if (p.payload.type === 'TASK_SUBMITTED') { 
+                state = "SUBMITTED"; 
+                activeWorkerDid = p.did; 
+                submittedLink = p.payload.data;
+              }
               if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; 
               if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
               if (p.payload.type === 'ESCROW_RELEASED') state = "RELEASED";
@@ -477,14 +483,18 @@
                  el.className = `flex justify-center mb-4`;
                  let sysMsg = `System: ${p.payload.type}`;
                  if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
-                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg += ` - Link: <a href="${p.payload.data}" class="text-blue-400 underline" target="_blank">View Submission</a>`;
+                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted: <a href="${p.payload.data}" class="text-blue-400 underline" target="_blank">${p.payload.data}</a>`;
                  if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
-                 el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-400 text-xs text-center w-full">${sysMsg}</div>`;
+                 if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
+                 if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
+                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Transaction Complete.`;
+                 
+                 el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-300 text-xs text-center w-full">${sysMsg}</div>`;
               } else if (p.payload.type === 'CHAT') {
                  el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
                  el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-lg max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'}">${p.payload.message}</div>`;
               }
-              streamDiv.insertBefore(el, streamDiv.firstChild);
+              streamDiv.appendChild(el);
             }
           } catch(e) { } 
         });
@@ -503,41 +513,54 @@
        const statusText = document.getElementById('escrow-status-text');
        const actionContainer = document.getElementById('escrow-action-container');
        const disputePanel = document.getElementById('dispute-panel');
-       actionContainer.innerHTML = ""; disputePanel.classList.add('hidden');
+       actionContainer.innerHTML = ""; 
+       disputePanel.classList.add('hidden');
        
        const isOfferer = (currentDid === activeTaskAuthorDid);
        const isLoggedIn = !!currentDid;
 
        if (state === "AWAITING_FUNDS") {
-          statusText.innerHTML = "Escrow: Awaiting Funds"; statusText.className = "text-sm font-bold text-yellow-400";
-          if (isOfferer && isLoggedIn) actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 text-xs rounded font-bold flex items-center gap-2">🦊 Connect MetaMask & Fund</button>`;
+          statusText.innerHTML = "Escrow: Awaiting Funds"; 
+          statusText.className = "text-sm font-bold text-yellow-400";
+          if (isOfferer && isLoggedIn) {
+            actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 text-xs rounded font-bold flex items-center gap-2">🦊 Connect MetaMask & Fund</button>`;
+          }
        } 
        else if (state === "FUNDED") {
-          statusText.innerHTML = "Escrow: Funded (Working Phase)"; statusText.className = "text-sm font-bold text-blue-400";
-          if (!isOfferer && isLoggedIn) actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task</button>`;
+          statusText.innerHTML = "Escrow: Funded (Working Phase)"; 
+          statusText.className = "text-sm font-bold text-blue-400";
+          if (!isOfferer && isLoggedIn) {
+            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task</button>`;
+          }
        }
        else if (state === "SUBMITTED") {
-          statusText.innerHTML = "Escrow: Review Phase"; statusText.className = "text-sm font-bold text-purple-400";
-          if (isOfferer && isLoggedIn) actionContainer.innerHTML = `
-            <button onclick="requestRevision()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 text-xs rounded font-bold">Request Revision</button>
-            <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs rounded font-bold">Reject</button>
-            <button onclick="releaseEscrow()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 text-xs rounded font-bold">Approve</button>
-          `;
+          statusText.innerHTML = "Escrow: Task Submitted (Review Phase)"; 
+          statusText.className = "text-sm font-bold text-purple-400";
+          if (isOfferer && isLoggedIn) {
+             actionContainer.innerHTML = `
+               <button onclick="requestRevision()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Request Revision</button>
+               <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Reject & Dispute</button>
+               <button onclick="releaseEscrow()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Approve & Release</button>
+             `;
+          } else if (!isOfferer && isLoggedIn) {
+             actionContainer.innerHTML = `<span class="text-xs text-gray-400 italic">Waiting for offerer review...</span>`;
+          }
        }
        else if (state === "DISPUTE") {
-          statusText.innerHTML = "Escrow: DISPUTE ACTIVE"; statusText.className = "text-sm font-bold text-red-500";
+          statusText.innerHTML = "Escrow: DISPUTE ACTIVE"; 
+          statusText.className = "text-sm font-bold text-red-500";
           disputePanel.classList.remove('hidden');
           document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
        }
        else if (state === "RELEASED") {
-          statusText.innerHTML = "Escrow: Complete (Funds Released)"; statusText.className = "text-sm font-bold text-green-400";
+          statusText.innerHTML = "Escrow: Complete (Funds Released)"; 
+          statusText.className = "text-sm font-bold text-green-400";
        }
        else if (state === "BURNED") {
-          statusText.innerHTML = "Escrow: Terminated (Funds Burned)"; statusText.className = "text-sm font-bold text-gray-500";
+          statusText.innerHTML = "Escrow: Terminated (Funds Burned)"; 
+          statusText.className = "text-sm font-bold text-gray-500";
        }
     }
-
-    triggerPoll();
   </script>
 </body>
 </html>
