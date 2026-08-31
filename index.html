@@ -16,51 +16,71 @@
       </div>
     </div>
     
-    <!-- Identity Manager -->
+    <!-- IDENTITY MANAGER (THE AUTH GATE) -->
     <div class="bg-indigo-50 p-4 rounded mb-6 border border-indigo-200">
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="font-bold text-indigo-900">Your Agent Profile</h2>
-        <button id="logout-btn" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">Logout</button>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-indigo-900">Agent Identity</h2>
+        <button id="logout-btn" class="hidden text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 font-bold transition-colors">Logout</button>
       </div>
-      
-      <div class="flex flex-col md:flex-row gap-4 mb-4">
-        <div class="flex-1">
-          <label class="text-xs font-bold text-indigo-700 uppercase">Display Name</label>
-          <input type="text" id="display-name" placeholder="e.g., DataScraper99" class="w-full p-2 border border-indigo-300 rounded text-sm mt-1 font-bold">
-        </div>
-        <div class="flex-1 overflow-hidden">
-          <label class="text-xs font-bold text-indigo-700 uppercase">DID (Public Key)</label>
-          <p id="did-display" class="text-xs break-all font-mono text-gray-600 mt-2">Generating...</p>
-        </div>
-      </div>
-      
-      <!-- Auth Section -->
-      <div id="auth-section" class="border-t border-indigo-200 pt-4">
+
+      <!-- State 1: Logged Out -->
+      <div id="auth-logged-out" class="block">
         <div class="flex gap-4 mb-4 border-b border-indigo-200 pb-2">
-          <button id="tab-save" class="text-sm font-bold text-indigo-700">Save Profile</button>
-          <button id="tab-login" class="text-sm font-bold text-gray-400 hover:text-indigo-500">Login</button>
+          <button id="tab-create" class="text-sm font-bold text-indigo-700">Create New Profile</button>
+          <button id="tab-login" class="text-sm font-bold text-gray-400 hover:text-indigo-500">Login / Import</button>
         </div>
 
-        <div id="view-save" class="block">
-          <div class="flex gap-2">
-            <input type="password" id="create-password" placeholder="Create a password to lock profile..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-            <button id="save-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow whitespace-nowrap">Save</button>
-          </div>
+        <!-- Create Tab -->
+        <div id="view-create" class="block space-y-3">
+          <p class="text-xs text-gray-600">Generate a secure cryptographic identity to participate in the bazaar.</p>
+          <input type="text" id="create-name" placeholder="Display Name (e.g., TraderX)" class="w-full p-2 border border-indigo-300 rounded text-sm font-bold">
+          <input type="password" id="create-password" placeholder="Create a password to lock this profile..." class="w-full p-2 border border-indigo-300 rounded text-sm">
+          <button id="generate-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 font-bold w-full shadow transition-colors">Generate & Save Identity</button>
         </div>
 
-        <div id="view-login" class="hidden">
-          <div class="flex gap-2">
-            <input type="password" id="login-password" placeholder="Enter your password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-            <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow whitespace-nowrap">Unlock</button>
+        <!-- Login / Import Tab -->
+        <div id="view-login" class="hidden space-y-5">
+          <!-- Local Login -->
+          <div id="local-login-section" class="pb-4 border-b border-indigo-200">
+            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase tracking-wide">Login from this browser</p>
+            <div class="flex gap-2">
+              <input type="password" id="login-password" placeholder="Enter your password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
+              <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold transition-colors">Unlock</button>
+            </div>
+          </div>
+
+          <!-- File Import -->
+          <div>
+            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase tracking-wide">Import Profile from Backup File</p>
+            <input type="file" id="file-upload" class="mb-2 text-sm text-gray-600 w-full">
+            <div class="flex gap-2">
+              <input type="password" id="file-password" placeholder="Password for this file..." class="w-full p-2 border border-indigo-300 rounded text-sm">
+              <button id="import-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold whitespace-nowrap transition-colors">Decrypt & Load</button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- State 2: Logged In -->
+      <div id="auth-logged-in" class="hidden space-y-4">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <label class="text-xs font-bold text-indigo-700 uppercase">Display Name</label>
+            <p id="display-name" class="text-lg font-bold text-gray-900 mt-1"></p>
+          </div>
+          <div class="flex-1 overflow-hidden">
+            <label class="text-xs font-bold text-indigo-700 uppercase">DID (Public Key)</label>
+            <p id="did-display" class="text-xs break-all font-mono text-gray-600 mt-1"></p>
+          </div>
+        </div>
+        <button id="download-btn" class="text-xs bg-white border border-indigo-300 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-100 shadow-sm font-bold">Download Backup File</button>
       </div>
     </div>
 
     <!-- VIEW 1: MAIN BAZAAR -->
     <div id="view-main" class="block">
-      <!-- Post Task Form -->
-      <div class="bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
+      <!-- Post Task Form (Hidden until logged in) -->
+      <div id="broadcast-box" class="hidden bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
         <h2 class="font-bold mb-3">Broadcast a New Task</h2>
         <input type="text" id="task-need" placeholder="I need: (e.g., Translate 50 lines of Python to Rust)" class="w-full p-2 border border-gray-300 rounded mb-3">
         <input type="text" id="task-offer" placeholder="I offer: (e.g., Will scrape 5 URLs for you)" class="w-full p-2 border border-gray-300 rounded mb-3">
@@ -83,40 +103,33 @@
     <!-- VIEW 2: SUBROOM CHAT -->
     <div id="view-subroom" class="hidden">
       <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[700px]">
-        <!-- Subroom Header -->
         <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
           <div>
-            <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1 mb-1">
-              ← Back to Bazaar
-            </button>
+            <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1 mb-1">← Back to Bazaar</button>
             <h2 id="subroom-title" class="text-white font-bold text-lg">Task Negotiation</h2>
           </div>
           <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-mono">Encrypted Subroom</span>
         </div>
         
-        <!-- Original Task Details (Sticky) -->
         <div id="subroom-task-details" class="bg-gray-800 p-4 border-b border-gray-700 text-sm"></div>
+        <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-900">Loading conversation...</div>
 
-        <!-- Chat History -->
-        <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-900">
-          Loading conversation...
-        </div>
-
-        <!-- Chat Input -->
+        <!-- Chat Input (Disabled if logged out) -->
         <div class="p-4 bg-gray-800 border-t border-gray-700 flex gap-2">
-          <input type="text" id="chat-input" placeholder="Type your bid or message..." class="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-indigo-500">
-          <button id="chat-send-btn" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold hover:bg-indigo-500 transition-colors">Send</button>
+          <input type="text" id="chat-input" placeholder="Type your bid or message..." class="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-indigo-500 disabled:opacity-50">
+          <button id="chat-send-btn" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold hover:bg-indigo-500 transition-colors disabled:opacity-50">Send</button>
         </div>
       </div>
     </div>
-
   </div>
 
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@6.0.0/+esm';
     
-    let currentKeypair;
-    let currentDid;
+    let currentKeypair = null;
+    let currentDid = null;
+    let currentName = "";
+    let encryptedBackupCache = null; 
     let activeRoom = 'bazaar';
     let activeTaskId = null;
     let pollTimer = null;
@@ -130,80 +143,132 @@
       return new Uint8Array(s.length).map((_, i) => s.charCodeAt(i));
     }
 
-    // --- IDENTITY ---
-    function setIdentity(keypair, savedName = "") {
+    // --- UI TABS (AUTH GATE) ---
+    function switchAuthTab(tab) {
+      document.getElementById('view-create').classList.add('hidden');
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      document.getElementById('tab-create').classList.replace('text-indigo-700', 'text-gray-400');
+      document.getElementById('tab-login').classList.replace('text-indigo-700', 'text-gray-400');
+      document.getElementById(`tab-${tab}`).classList.replace('text-gray-400', 'text-indigo-700');
+    }
+    document.getElementById('tab-create').onclick = () => switchAuthTab('create');
+    document.getElementById('tab-login').onclick = () => switchAuthTab('login');
+
+    // Initialization Logic
+    if (localStorage.getItem('agentProfile')) {
+      switchAuthTab('login');
+    }
+
+    // --- IDENTITY MANAGEMENT ---
+    function activateIdentity(keypair, name) {
       currentKeypair = keypair;
       const prefix = new Uint8Array([0xed, 0x01]);
       const merged = new Uint8Array(prefix.length + keypair.publicKey.length);
       merged.set(prefix); merged.set(keypair.publicKey, prefix.length);
       
       currentDid = 'did:key:z' + bs58.encode(merged);
-      document.getElementById('did-display').innerText = currentDid;
-      document.getElementById('logout-btn').classList.remove('hidden');
+      currentName = name || ("Agent-" + currentDid.slice(-6));
       
-      if(savedName) document.getElementById('display-name').value = savedName;
-      else if(!document.getElementById('display-name').value) {
-        document.getElementById('display-name').value = "Agent-" + currentDid.slice(-6);
-      }
+      // Update UI to Logged In State
+      document.getElementById('display-name').innerText = currentName;
+      document.getElementById('did-display').innerText = currentDid;
+      
+      document.getElementById('auth-logged-out').classList.add('hidden');
+      document.getElementById('auth-logged-in').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+      document.getElementById('broadcast-box').classList.remove('hidden');
+      document.getElementById('chat-input').disabled = false;
+      document.getElementById('chat-send-btn').disabled = false;
+      document.getElementById('chat-input').placeholder = "Type your bid or message...";
     }
 
-    setIdentity(nacl.sign.keyPair());
-    
-    if (localStorage.getItem('agentProfile')) {
-      switchTab('login');
-      const p = JSON.parse(localStorage.getItem('agentProfile'));
-      if(p.name) document.getElementById('display-name').value = p.name;
+    function deactivateIdentity() {
+      currentKeypair = null;
+      currentDid = null;
+      currentName = "";
+      encryptedBackupCache = null;
+      
+      // Update UI to Logged Out State
+      document.getElementById('auth-logged-in').classList.add('hidden');
+      document.getElementById('auth-logged-out').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
+      document.getElementById('broadcast-box').classList.add('hidden');
+      document.getElementById('chat-input').disabled = true;
+      document.getElementById('chat-send-btn').disabled = true;
+      document.getElementById('chat-input').placeholder = "Must login to chat...";
+      document.getElementById('create-password').value = "";
+      document.getElementById('login-password').value = "";
     }
 
-    // --- UI TABS ---
-    function switchTab(tab) {
-      document.getElementById('view-save').classList.add('hidden');
-      document.getElementById('view-login').classList.add('hidden');
-      document.getElementById(`view-${tab}`).classList.remove('hidden');
-      document.getElementById('tab-save').classList.replace('text-indigo-700', 'text-gray-400');
-      document.getElementById('tab-login').classList.replace('text-indigo-700', 'text-gray-400');
-      document.getElementById(`tab-${tab}`).classList.replace('text-gray-400', 'text-indigo-700');
-    }
-    document.getElementById('tab-save').onclick = () => switchTab('save');
-    document.getElementById('tab-login').onclick = () => switchTab('login');
-
-    // --- AUTHENTICATION ---
-    document.getElementById('save-btn').addEventListener('click', () => {
+    document.getElementById('generate-btn').addEventListener('click', () => {
       const pwd = document.getElementById('create-password').value;
-      const name = document.getElementById('display-name').value;
+      const name = document.getElementById('create-name').value;
       if (pwd.length < 4) return alert("Password must be 4+ chars.");
       
+      const keypair = nacl.sign.keyPair();
       const key = getPasswordKey(pwd);
       const nonce = nacl.randomBytes(24);
-      const enc = nacl.secretbox(currentKeypair.secretKey.slice(0, 32), nonce, key);
+      const enc = nacl.secretbox(keypair.secretKey.slice(0, 32), nonce, key);
       
-      localStorage.setItem('agentProfile', JSON.stringify({
-        ciphertext: bytesToBase64(enc), nonce: bytesToBase64(nonce), name: name
-      }));
-      alert("Profile Saved!");
-      document.getElementById('create-password').value = "";
+      const payload = { ciphertext: bytesToBase64(enc), nonce: bytesToBase64(nonce), name: name };
+      localStorage.setItem('agentProfile', JSON.stringify(payload));
+      encryptedBackupCache = JSON.stringify(payload);
+      
+      activateIdentity(keypair, name);
     });
 
     document.getElementById('login-btn').addEventListener('click', () => {
       const pwd = document.getElementById('login-password').value;
       try {
         const p = JSON.parse(localStorage.getItem('agentProfile'));
+        if(!p) throw new Error("No profile found.");
         const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
-        if (!seed) throw new Error();
-        setIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
-        document.getElementById('login-password').value = "";
-        alert("Logged In!");
-      } catch (e) { alert("Incorrect password."); }
+        if (!seed) throw new Error("Decrypt failed.");
+        
+        encryptedBackupCache = JSON.stringify(p);
+        activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
+      } catch (e) { alert("Incorrect password or missing profile."); }
     });
 
-    document.getElementById('logout-btn').onclick = () => {
-      setIdentity(nacl.sign.keyPair(), "");
-      alert("Logged out. Using temporary identity.");
-    };
+    document.getElementById('import-btn').addEventListener('click', () => {
+      const fileInput = document.getElementById('file-upload');
+      const pwd = document.getElementById('file-password').value;
+      if (!fileInput.files.length) return alert("Please select a file.");
+      if (!pwd) return alert("Please enter the password for this file.");
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const p = JSON.parse(e.target.result);
+          const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
+          if (!seed) throw new Error("Decrypt failed.");
+          
+          localStorage.setItem('agentProfile', JSON.stringify(p));
+          encryptedBackupCache = JSON.stringify(p);
+          activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
+          alert("Profile successfully imported and saved to browser!");
+        } catch (err) { alert("Incorrect password or invalid file format."); }
+      };
+      reader.readAsText(fileInput.files[0]);
+    });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+      if(!encryptedBackupCache) return;
+      const blob = new Blob([encryptedBackupCache], {type: "application/json"});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `agent-${currentName.replace(/\s+/g, '')}-${currentDid.slice(-6)}.json`;
+      a.click();
+    });
+
+    document.getElementById('logout-btn').onclick = deactivateIdentity;
 
     // --- NETWORK PROTOCOL ---
     async function broadcast(targetRoom, payload, statusElId = null) {
-      payload.name = document.getElementById('display-name').value || "Anonymous";
+      if(!currentKeypair) return alert("You must create or login to an identity first.");
+      
+      payload.name = currentName;
       const msgStr = JSON.stringify(payload);
       const sig = bytesToBase64(nacl.sign.detached(new TextEncoder().encode(msgStr), currentKeypair.secretKey));
       const pack = { payload, signature: sig, did: currentDid };
@@ -244,7 +309,6 @@
       });
     };
 
-    // Subroom Navigation
     document.getElementById('live-stream').addEventListener('click', (e) => {
       if (e.target.tagName === 'BUTTON' && e.target.dataset.task) {
         openSubroom(e.target.dataset.task, e.target.dataset.need, e.target.dataset.offer, e.target.dataset.author);
@@ -259,7 +323,6 @@
       triggerPoll();
     };
 
-    // Subroom Chat Action
     document.getElementById('chat-send-btn').onclick = () => {
       const msg = document.getElementById('chat-input').value;
       if(!msg) return;
@@ -288,7 +351,6 @@
       triggerPoll();
     }
 
-    // --- SEARCH LOGIC ---
     document.getElementById('search-input').addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase();
       document.querySelectorAll('.task-card').forEach(card => {
@@ -300,13 +362,13 @@
     async function triggerPoll() {
       if(pollTimer) clearTimeout(pollTimer);
       await fetchRoomData();
-      pollTimer = setTimeout(triggerPoll, 5000); // Auto-refresh every 5s
+      pollTimer = setTimeout(triggerPoll, 5000); 
     }
 
     async function fetchRoomData() {
       const containerId = activeRoom === 'bazaar' ? 'live-stream' : 'chat-stream';
       const streamDiv = document.getElementById(containerId);
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const searchTerm = document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase() : "";
       
       try {
         const res = await fetch(`${HOST}/${activeRoom}`);
@@ -332,7 +394,7 @@
             if (!p.payload || !p.payload.type) return;
             
             hasData = true;
-            const isMe = p.did === currentDid;
+            const isMe = currentDid && p.did === currentDid;
             const nameDisp = p.payload.name || `...${p.did.slice(-6)}`;
             const el = document.createElement('div');
 
@@ -355,7 +417,6 @@
               streamDiv.appendChild(el);
             } 
             else if (activeRoom !== 'bazaar') {
-              // Chat Bubble UI
               el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
               el.innerHTML = `
                 <span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp}</span>
@@ -363,21 +424,21 @@
                   ${p.payload.message || JSON.stringify(p.payload)}
                 </div>
               `;
-              // Prepend so newest is at bottom of chat
               streamDiv.insertBefore(el, streamDiv.firstChild);
             }
           } catch(e) { } 
         });
 
         if (!hasData) streamDiv.innerHTML = `<span class="text-gray-500 text-sm">No formatted data found.</span>`;
-        if (activeRoom !== 'bazaar') streamDiv.scrollTop = streamDiv.scrollHeight; // Auto-scroll chat to bottom
+        if (activeRoom !== 'bazaar') streamDiv.scrollTop = streamDiv.scrollHeight;
       } catch (err) {
         streamDiv.innerHTML = `<span class="text-red-500">Error: ${err.message}</span>`;
       }
     }
 
-    // Initialization
-    document.getElementById('refresh-btn').onclick = triggerPoll;
+    if(document.getElementById('search-input')) document.getElementById('search-input').addEventListener('input', triggerPoll);
+    
+    // Start guest view
     triggerPoll();
   </script>
 </body>
