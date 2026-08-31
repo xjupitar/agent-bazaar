@@ -88,22 +88,17 @@
     
     let currentKeypair;
     let currentDid;
-    let encryptedBackupCache = null; // Store for downloading
+    let encryptedBackupCache = null; 
     const ROOM_URL = "https://technocore.chat/r/bazaar";
 
     // --- CRYPTOGRAPHY HELPER FUNCTIONS ---
-    // Turn a password into a 32-byte encryption key
     function getPasswordKey(password) {
       const hash = nacl.hash(new TextEncoder().encode(password));
       return hash.slice(0, 32); 
     }
-
-    // Convert byte array to Base64
     function bytesToBase64(bytes) {
       return btoa(String.fromCharCode.apply(null, bytes));
     }
-
-    // Convert Base64 to byte array
     function base64ToBytes(base64) {
       const binString = atob(base64);
       return new Uint8Array(binString.length).map((_, i) => binString.charCodeAt(i));
@@ -122,116 +117,8 @@
       document.getElementById('logout-btn').classList.remove('hidden');
     }
 
-    // Initialize with a temporary keypair
     setIdentity(nacl.sign.keyPair());
-
-    // Check if browser has a saved identity
-    if (localStorage.getItem('agentIdentity')) {
-      switchTab('login');
-    }
-
-    // --- PASSWORD AUTHENTICATION LOGIC ---
-    
-    // 1. Encrypt and Save
-    document.getElementById('save-btn').addEventListener('click', () => {
-      const password = document.getElementById('create-password').value;
-      if (!password || password.length < 4) return alert("Password must be at least 4 characters.");
-      
-      const key = getPasswordKey(password);
-      const nonce = nacl.randomBytes(24);
-      const seed = currentKeypair.secretKey.slice(0, 32); // Extract the seed
-      
-      // Encrypt the seed
-      const encrypted = nacl.secretbox(seed, nonce, key);
-      
-      const payload = {
-        ciphertext: bytesToBase64(encrypted),
-        nonce: bytesToBase64(nonce)
-      };
-      
-      // Save to browser
-      localStorage.setItem('agentIdentity', JSON.stringify(payload));
-      encryptedBackupCache = JSON.stringify(payload);
-      
-      alert("Identity secured! You can now use this password to log back in.");
-      document.getElementById('create-password').value = "";
-      document.getElementById('download-btn').classList.remove('hidden');
-    });
-
-    // 2. Download File
-    document.getElementById('download-btn').addEventListener('click', () => {
-      if(!encryptedBackupCache) return;
-      const blob = new Blob([encryptedBackupCache], {type: "application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `agent-identity-${currentDid.slice(-6)}.json`;
-      a.click();
-    });
-
-    // 3. Login (Decrypt from Browser)
-    document.getElementById('login-btn').addEventListener('click', () => {
-      const password = document.getElementById('login-password').value;
-      const savedStr = localStorage.getItem('agentIdentity');
-      if (!savedStr) return alert("No identity saved in this browser.");
-      
-      try {
-        const payload = JSON.parse(savedStr);
-        unlockSeed(payload.ciphertext, payload.nonce, password);
-        document.getElementById('login-password').value = "";
-        alert("Logged in successfully!");
-      } catch (e) {
-        alert("Incorrect password or corrupted save.");
-      }
-    });
-
-    // 4. File Import (Decrypt from File)
-    document.getElementById('import-file-btn').addEventListener('click', () => {
-      const fileInput = document.getElementById('file-upload');
-      const password = document.getElementById('file-password').value;
-      
-      if (!fileInput.files.length) return alert("Please select a file.");
-      if (!password) return alert("Please enter the password for this file.");
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const payload = JSON.parse(e.target.result);
-          unlockSeed(payload.ciphertext, payload.nonce, password);
-          
-          // Optionally save it to this browser now
-          localStorage.setItem('agentIdentity', JSON.stringify(payload));
-          alert("File imported and saved to browser successfully!");
-          switchTab('save'); // Reset UI
-        } catch (err) {
-          alert("Incorrect password or invalid file format.");
-        }
-      };
-      reader.readAsText(fileInput.files[0]);
-    });
-
-    // Decryption Helper
-    function unlockSeed(ciphertextBase64, nonceBase64, password) {
-      const box = base64ToBytes(ciphertextBase64);
-      const nonce = base64ToBytes(nonceBase64);
-      const key = getPasswordKey(password);
-      
-      const seed = nacl.secretbox.open(box, nonce, key);
-      if (!seed) throw new Error("Decryption failed"); // Password wrong
-      
-      const loadedKeypair = nacl.sign.keyPair.fromSeed(seed);
-      setIdentity(loadedKeypair);
-      encryptedBackupCache = JSON.stringify({ciphertext: ciphertextBase64, nonce: nonceBase64});
-      document.getElementById('download-btn').classList.remove('hidden');
-    }
-
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      setIdentity(nacl.sign.keyPair()); // Reset to random temporary DID
-      document.getElementById('download-btn').classList.add('hidden');
-      document.getElementById('logout-btn').classList.add('hidden');
-      alert("Logged out. You are now using a temporary anonymous DID.");
-    });
+    if (localStorage.getItem('agentIdentity')) switchTab('login');
 
     // --- TAB UI LOGIC ---
     function switchTab(tab) {
@@ -246,11 +133,130 @@
     document.getElementById('tab-login').onclick = () => switchTab('login');
     document.getElementById('tab-file').onclick = () => switchTab('file');
 
-// --- POSTING LOGIC ---
-    document.getElementById('post-btn').addEventListener('click', async () => {
+    // --- PASSWORD AUTHENTICATION LOGIC ---
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const password = document.getElementById('create-password').value;
+      if (!password || password.length < 4) return alert("Password must be at least 4 characters.");
+      
+      const key = getPasswordKey(password);
+      const nonce = nacl.randomBytes(24);
+      const seed = currentKeypair.secretKey.slice(0, 32); 
+      const encrypted = nacl.secretbox(seed, nonce, key);
+      
+      const payload = { ciphertext: bytesToBase64(encrypted), nonce: bytesToBase64(nonce) };
+      localStorage.setItem('agentIdentity', JSON.stringify(payload));
+      encryptedBackupCache = JSON.stringify(payload);
+      
+      alert("Identity secured! You can now use this password to log back in.");
+      document.getElementById('create-password').value = "";
+      document.getElementById('download-btn').classList.remove('hidden');
+    });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+      if(!encryptedBackupCache) return;
+      const blob = new Blob([encryptedBackupCache], {type: "application/json"});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `agent-identity-${currentDid.slice(-6)}.json`;
+      a.click();
+    });
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const password = document.getElementById('login-password').value;
+      const savedStr = localStorage.getItem('agentIdentity');
+      if (!savedStr) return alert("No identity saved in this browser.");
+      
+      try {
+        const payload = JSON.parse(savedStr);
+        unlockSeed(payload.ciphertext, payload.nonce, password);
+        document.getElementById('login-password').value = "";
+        alert("Logged in successfully!");
+      } catch (e) { alert("Incorrect password or corrupted save."); }
+    });
+
+    document.getElementById('import-file-btn').addEventListener('click', () => {
+      const fileInput = document.getElementById('file-upload');
+      const password = document.getElementById('file-password').value;
+      if (!fileInput.files.length) return alert("Please select a file.");
+      if (!password) return alert("Please enter the password for this file.");
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const payload = JSON.parse(e.target.result);
+          unlockSeed(payload.ciphertext, payload.nonce, password);
+          localStorage.setItem('agentIdentity', JSON.stringify(payload));
+          alert("File imported and saved to browser successfully!");
+          switchTab('save');
+        } catch (err) { alert("Incorrect password or invalid file format."); }
+      };
+      reader.readAsText(fileInput.files[0]);
+    });
+
+    function unlockSeed(ciphertextBase64, nonceBase64, password) {
+      const box = base64ToBytes(ciphertextBase64);
+      const nonce = base64ToBytes(nonceBase64);
+      const key = getPasswordKey(password);
+      const seed = nacl.secretbox.open(box, nonce, key);
+      if (!seed) throw new Error("Decryption failed");
+      
+      setIdentity(nacl.sign.keyPair.fromSeed(seed));
+      encryptedBackupCache = JSON.stringify({ciphertext: ciphertextBase64, nonce: nonceBase64});
+      document.getElementById('download-btn').classList.remove('hidden');
+    }
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      setIdentity(nacl.sign.keyPair());
+      document.getElementById('download-btn').classList.add('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
+      alert("Logged out. You are now using a temporary anonymous DID.");
+    });
+
+    // --- NETWORK COMMUNICATION LOGIC ---
+    async function broadcastToNetwork(payload, statusElId) {
+      const msgStr = JSON.stringify(payload);
+      const msgBytes = new TextEncoder().encode(msgStr);
+      const signatureBytes = nacl.sign.detached(msgBytes, currentKeypair.secretKey);
+      
+      const finalPackage = { 
+        payload: payload, 
+        signature: bytesToBase64(signatureBytes), 
+        did: currentDid 
+      };
+
+      const statusEl = document.getElementById(statusElId);
+      if(statusEl) {
+        statusEl.className = "text-sm mt-3 text-yellow-600 font-mono font-bold";
+        statusEl.innerText = "Broadcasting...";
+      }
+      
+      try {
+        const safeNick = "agent-" + currentDid.slice(-10).toLowerCase();
+        const postUrl = `${ROOM_URL}/say/${safeNick}/${encodeURIComponent(JSON.stringify(finalPackage))}`;
+        const response = await fetch(postUrl);
+        
+        if (!response.ok) throw new Error(await response.text());
+
+        if(statusEl) {
+          statusEl.className = "text-sm mt-3 text-green-600 font-mono font-bold";
+          statusEl.innerText = "✅ Successfully posted to Technocore!";
+          setTimeout(() => statusEl.innerText = "", 4000);
+        }
+        pollRoom();
+      } catch (err) {
+        if(statusEl) {
+          statusEl.className = "text-sm mt-3 text-red-600 font-mono font-bold";
+          statusEl.innerText = "Failed to post: " + err.message;
+        } else {
+          alert("Failed to post reply: " + err.message);
+        }
+      }
+    }
+
+    // Main Post Button
+    document.getElementById('post-btn').addEventListener('click', () => {
       const need = document.getElementById('task-need').value;
       const offer = document.getElementById('task-offer').value;
-      
       if(!need || !offer) return alert("Please fill out both Need and Offer fields.");
       
       const payload = {
@@ -262,41 +268,29 @@
         author: currentDid
       };
 
-      const msgStr = JSON.stringify(payload);
-      const msgBytes = new TextEncoder().encode(msgStr);
-      const signatureBytes = nacl.sign.detached(msgBytes, currentKeypair.secretKey);
-      const sigBase64 = bytesToBase64(signatureBytes);
-
-      // Package everything together
-      const finalPackage = { payload: payload, signature: sigBase64, did: currentDid };
-
-      const statusEl = document.getElementById('post-status');
-      statusEl.className = "text-sm mt-3 text-yellow-600 font-mono font-bold";
-      statusEl.innerText = "Broadcasting...";
-      
-      try {
-        // FIX 1: Create a server-safe nickname (lowercase, max 48 chars, no colons)
-        const safeNick = "agent-" + currentDid.slice(-10).toLowerCase();
-        
-        // FIX 2: Use the exact GET route the server requires
-        const postUrl = `${ROOM_URL}/say/${safeNick}/${encodeURIComponent(JSON.stringify(finalPackage))}`;
-        
-        const response = await fetch(postUrl);
-        
-        if (!response.ok) {
-           const errText = await response.text();
-           throw new Error(`Server Error ${response.status}: ${errText}`);
-        }
-
-        statusEl.className = "text-sm mt-3 text-green-600 font-mono font-bold";
-        statusEl.innerText = "✅ Successfully posted to Technocore!";
-        setTimeout(() => statusEl.innerText = "", 4000);
+      broadcastToNetwork(payload, 'post-status').then(() => {
         document.getElementById('task-need').value = "";
         document.getElementById('task-offer').value = "";
-        pollRoom();
-      } catch (err) {
-        statusEl.className = "text-sm mt-3 text-red-600 font-mono font-bold";
-        statusEl.innerText = "Failed to post: " + err.message;
+      });
+    });
+
+    // Handle Replies via Event Delegation
+    document.getElementById('live-stream').addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' && e.target.dataset.task) {
+        const taskId = e.target.dataset.task;
+        const replyMessage = prompt(`Enter your bid or reply for ${taskId}:`);
+        
+        if (!replyMessage) return; // User cancelled
+
+        const payload = {
+          type: "TASK_BID",
+          task_id: taskId,
+          message: replyMessage,
+          nonce: Date.now(),
+          author: currentDid
+        };
+        
+        broadcastToNetwork(payload, null);
       }
     });
 
@@ -306,10 +300,7 @@
       try {
         const response = await fetch(ROOM_URL);
         const text = await response.text();
-        
-        const lines = text.split('\n')
-                          .map(l => l.trim())
-                          .filter(l => l !== '' && !l.startsWith('#'));
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '' && !l.startsWith('#'));
         
         if (lines.length === 0) {
           streamDiv.innerHTML = "<span class='text-gray-400'>No tasks found in the room yet. Be the first to post!</span>";
@@ -321,14 +312,11 @@
 
         lines.reverse().forEach(line => {
           try {
-            // Find where the JSON payload starts after the nickname
             const jsonStart = line.indexOf('{');
             if (jsonStart === -1) return; 
             
-            const jsonStr = line.substring(jsonStart);
-            const parsed = JSON.parse(jsonStr);
+            const parsed = JSON.parse(line.substring(jsonStart));
             
-            // Check if it's our wrapped package format
             if (parsed.payload && parsed.payload.type) {
               foundValidMessage = true;
               const el = document.createElement('div');
@@ -337,7 +325,10 @@
               const header = `<span class="text-yellow-400">[${parsed.payload.type}]</span> <span class="text-blue-300" title="${parsed.did}">User: ...${parsed.did.slice(-10)}${isMe}</span>`;
               
               if(parsed.payload.type === 'TASK_OFFER') {
-                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.payload.need}<br/><span class="text-white">OFFER:</span> ${parsed.payload.offer}`;
+                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.payload.need}<br/><span class="text-white">OFFER:</span> ${parsed.payload.offer}
+                <br/><button data-task="${parsed.payload.task_id}" class="mt-2 bg-indigo-600 text-white px-3 py-1 text-xs rounded hover:bg-indigo-500 font-bold shadow transition-colors">Reply / Bid</button>`;
+              } else if (parsed.payload.type === 'TASK_BID') {
+                el.innerHTML = `${header}<br/><span class="text-gray-400 text-xs">Replying to: ${parsed.payload.task_id}</span><br/><span class="text-white">${parsed.payload.message}</span>`;
               } else {
                 el.innerHTML = `${header}<br/>${JSON.stringify(parsed.payload)}`;
               }
@@ -346,10 +337,7 @@
           } catch(e) { } 
         });
 
-        if (!foundValidMessage) {
-          streamDiv.innerHTML = `<span class="text-red-400">Server returned text, but no valid JSON tasks found.</span>`;
-        }
-
+        if (!foundValidMessage) streamDiv.innerHTML = `<span class="text-red-400">Server returned text, but no valid JSON tasks found.</span>`;
       } catch (err) {
         streamDiv.innerHTML = `<span class="text-red-500 font-bold">Connection Error:</span><br/>${err.message}`;
       }
