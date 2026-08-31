@@ -296,48 +296,78 @@
     // --- WEB3 ESCROW ACTIONS ---
     window.fundEscrowWeb3 = async function() {
       if (typeof window.ethereum === 'undefined') {
-        return alert("MetaMask is not installed. Please install a Web3 wallet to test the Ethereum Sepolia prototype.");
+        return alert("MetaMask is not installed. Please install a Web3 wallet extension.");
       }
       
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        await provider.send("eth_requestAccounts", []); // Request connection
-        const signer = await provider.getSigner();
-        
-        // Enforce Sepolia Network (Chain ID: 11155111)
-        const network = await provider.getNetwork();
-        if (network.chainId !== 11155111n) {
-            alert("Please switch your MetaMask network to the Sepolia Testnet.");
+        // 1. Request Account Access (triggers MetaMask connection popup)
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (!accounts || accounts.length === 0) throw new Error("No Ethereum account selected.");
+        const userAddress = accounts[0];
+
+        // 2. Ensure Sepolia Network (Chain ID: 0xaa36a7 / 11155111)
+        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (currentChainId !== '0xaa36a7') {
+          try {
             await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0xaa36a7' }], // 11155111 in hex
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0xaa36a7' }],
             });
-            return;
+          } catch (switchError) {
+            // Error code 4902: Chain not yet added to MetaMask
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xaa36a7',
+                  chainName: 'Sepolia Test Network',
+                  nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+                  rpcUrls: ['https://rpc.sepolia.org'],
+                  blockExplorerUrls: ['https://sepolia.etherscan.io']
+                }],
+              });
+            } else {
+              throw switchError;
+            }
+          }
         }
 
-        const amountStr = prompt("Enter amount of Sepolia ETH to lock in escrow (e.g., 0.001):", "0.001");
-        if (!amountStr || isNaN(amountStr)) return;
+        // 3. Prompt for deposit amount
+        const amountStr = prompt("Enter amount of Sepolia ETH to lock in escrow:", "0.001");
+        if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
         
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Awaiting MetaMask Confirmation...</span>";
-        
-        // Send to standard burn address for prototype simulation
-        const mockEscrowAddress = "0x000000000000000000000000000000000000dEaD"; 
-        
-        const tx = await signer.sendTransaction({
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Opening MetaMask...</span>";
+
+        // Convert ETH amount to Hex Wei for raw RPC
+        const weiValue = BigInt(Math.floor(Number(amountStr) * 1e18)).toString(16);
+        const mockEscrowAddress = "0x000000000000000000000000000000000000dEaD";
+
+        // 4. Trigger MetaMask Native Transaction Popup Directly
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: userAddress,
             to: mockEscrowAddress,
-            value: ethers.parseEther(amountStr)
+            value: '0x' + weiValue
+          }]
         });
 
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Transaction Pending on Sepolia...</span>";
-        await tx.wait(); // Wait for block confirmation
-        
-        broadcast(activeTaskId, { type: "ESCROW_FUNDED", txHash: tx.hash, amount: amountStr, author: currentDid });
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Transaction Broadcasted to Sepolia...</span>";
+
+        // 5. Broadcast confirmation to subroom
+        await broadcast(activeTaskId, { 
+          type: "ESCROW_FUNDED", 
+          txHash: txHash, 
+          amount: amountStr, 
+          author: currentDid 
+        });
+
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Awaiting Funds";
-        console.error(err);
-        alert("Transaction failed or rejected by user.");
+        console.error("Web3 Error:", err);
+        alert(`Transaction Notice: ${err.message || err}`);
       }
-    }
+    };
 
     window.submitTask = function() {
       const link = prompt("Provide link to completed task:");
