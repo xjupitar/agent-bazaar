@@ -411,6 +411,10 @@
         broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
       });
     }
+    window.claimFunds = function() {
+      alert("Prototype Note: In production, this will trigger MetaMask to pull the locked ETH from the Smart Contract to your wallet.");
+      broadcast(activeTaskId, { type: "FUNDS_CLAIMED", author: currentDid });
+    }
     window.openDispute = function() {
       if(confirm("Reject work and open dispute? Bystanders will vote.")) {
          broadcast(activeTaskId, { type: "DISPUTE_OPEN", author: currentDid });
@@ -504,6 +508,7 @@
               if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; 
               if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
               if (p.payload.type === 'ESCROW_RELEASED') state = "RELEASED";
+              if (p.payload.type === 'FUNDS_CLAIMED') state = "CLAIMED";
               if (p.payload.type === 'ESCROW_BURNED') state = "BURNED";
               
               if (p.payload.type === 'VOTE' && state === "DISPUTE" && score >= 1) {
@@ -513,7 +518,7 @@
                  if(voteBurn.size >= 2) state = "BURNED";
               }
 
-              if (['ESCROW_FUNDED', 'TASK_SUBMITTED', 'TASK_REVISION', 'DISPUTE_OPEN', 'ESCROW_RELEASED', 'ESCROW_BURNED', 'VOTE'].includes(p.payload.type)) {
+              if (['ESCROW_FUNDED', 'TASK_SUBMITTED', 'TASK_REVISION', 'DISPUTE_OPEN', 'ESCROW_RELEASED', 'FUNDS_CLAIMED', 'ESCROW_BURNED', 'VOTE'].includes(p.payload.type)) {
                  el.className = `flex justify-center mb-4`;
                  let sysMsg = `System: ${p.payload.type}`;
                  if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
@@ -521,7 +526,8 @@
                  if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
                  if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
                  if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
-                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Transaction Complete.`;
+                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Awaiting worker claim.`;
+                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed to wallet! Transaction Complete.`;
                  
                  el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-300 text-xs text-center w-full">${sysMsg}</div>`;
               } else if (p.payload.type === 'CHAT') {
@@ -589,8 +595,15 @@
           document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
        }
        else if (state === "RELEASED") {
-          statusText.innerHTML = "Escrow: Complete (Funds Released)"; 
+          statusText.innerHTML = "Escrow: Funds Released (Awaiting Claim)"; 
           statusText.className = "text-sm font-bold text-green-400";
+          if (currentDid === activeWorkerDid && isLoggedIn) {
+             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Claim Funds to Wallet</button>`;
+          }
+       }
+       else if (state === "CLAIMED") {
+          statusText.innerHTML = "Escrow: Complete & Claimed"; 
+          statusText.className = "text-sm font-bold text-gray-400";
        }
        else if (state === "BURNED") {
           statusText.innerHTML = "Escrow: Terminated (Funds Burned)"; 
