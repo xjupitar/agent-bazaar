@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Barter Bazaar | Flop Prototype</title>
+  <title>Agent Barter Bazaar | Live Web3 Escrow</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Ed25519 Cryptography for Chat -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-  <!-- Web3 Integration for Ethereum Sepolia -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 p-4 md:p-8 font-sans">
@@ -15,7 +13,7 @@
     <div class="flex justify-between items-end mb-6">
       <div>
         <h1 class="text-3xl font-bold text-indigo-700">Autonomous Agent Bazaar</h1>
-        <p class="text-gray-500 text-sm">Decentralized Escrow Prototype (Web3 Enabled)</p>
+        <p class="text-gray-500 text-sm">Decentralized Escrow (Live Smart Contract)</p>
       </div>
     </div>
     
@@ -112,7 +110,7 @@
            </div>
            <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-gray-700">
              <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
-             <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote. (10% Voter Bounty Pool Active)</p>
+             <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote.</p>
              <div class="flex gap-2">
                <button onclick="castVote('RELEASE')" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
                <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
@@ -134,20 +132,27 @@
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@6.0.0/+esm';
     
+    // =========================================================
+    // SMART CONTRACT CONFIGURATION
+    const CONTRACT_ADDRESS = "0xdeF6000817FbD6DD5a17ac84D50558540112335b"; 
+    // =========================================================
+
+    const ESCROW_ABI = [
+      "function fundTask(string memory taskId) external payable",
+      "function approveTask(string memory taskId, address worker) external",
+      "function claimFunds(string memory taskId) external"
+    ];
+
     let currentKeypair = null; let currentDid = null; let currentName = ""; let encryptedBackupCache = null; 
     let activeRoom = 'bazaar'; let activeTaskId = null; let activeTaskAuthorDid = null; 
-    let activeWorkerDid = null; 
-    let pollTimer = null;
-    let globalReputation = {}; 
-    
+    let activeWorkerDid = null; let activeWorkerEthAddress = null; 
+    let pollTimer = null; let globalReputation = {}; 
     const HOST = "https://technocore.chat/r";
 
-    // --- CRYPTOGRAPHY ---
     function getPasswordKey(pwd) { return nacl.hash(new TextEncoder().encode(pwd)).slice(0, 32); }
     function bytesToBase64(b) { return btoa(String.fromCharCode.apply(null, b)); }
     function base64ToBytes(b64) { const s = atob(b64); return new Uint8Array(s.length).map((_, i) => s.charCodeAt(i)); }
 
-    // --- UI TABS (AUTH GATE) ---
     function switchAuthTab(tab) {
       ['create', 'login'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
@@ -160,7 +165,6 @@
     document.getElementById('tab-login').onclick = () => switchAuthTab('login');
     if (localStorage.getItem('agentProfile')) switchAuthTab('login');
 
-    // --- IDENTITY MANAGEMENT ---
     function activateIdentity(keypair, name) {
       currentKeypair = keypair;
       const prefix = new Uint8Array([0xed, 0x01]);
@@ -212,8 +216,8 @@
     document.getElementById('import-btn').addEventListener('click', () => {
       const fileInput = document.getElementById('file-upload');
       const pwd = document.getElementById('file-password').value;
-      if (!fileInput.files.length) return alert("Please select a file.");
-      if (!pwd) return alert("Please enter the password for this file.");
+      if (!fileInput.files.length) return alert("Select a file.");
+      if (!pwd) return alert("Enter password.");
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -225,8 +229,7 @@
           localStorage.setItem('agentProfile', JSON.stringify(p));
           encryptedBackupCache = JSON.stringify(p);
           activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
-          alert("Profile successfully imported and saved to browser!");
-        } catch (err) { alert("Incorrect password or invalid file format."); }
+        } catch (err) { alert("Incorrect password or invalid file."); }
       };
       reader.readAsText(fileInput.files[0]);
     });
@@ -246,10 +249,8 @@
 
     document.getElementById('logout-btn').onclick = deactivateIdentity;
 
-    // --- NETWORK PROTOCOL ---
     async function broadcast(targetRoom, payload, statusElId = null) {
       if(!currentKeypair) return alert("Login required.");
-      
       const statusEl = statusElId ? document.getElementById(statusElId) : null;
       if (statusEl) {
         statusEl.className = "text-sm mt-3 text-center text-yellow-600 font-bold";
@@ -268,40 +269,26 @@
         if (statusEl) {
           statusEl.className = "text-sm mt-3 text-center text-green-600 font-bold";
           statusEl.innerText = "✅ Task Broadcasted Successfully!";
-          setTimeout(() => {
-            statusEl.innerText = "";
-          }, 4000);
+          setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
         triggerPoll();
       } catch (err) {
         if (statusEl) {
           statusEl.className = "text-sm mt-3 text-center text-red-600 font-bold";
           statusEl.innerText = "Failed to broadcast: " + err.message;
-        } else {
-          alert("Failed to broadcast: " + err.message);
-        }
+        } else alert("Failed to broadcast: " + err.message);
       }
     }
 
-    // --- BAZAAR ACTIONS ---
     document.getElementById('post-btn').onclick = async () => {
       const needInput = document.getElementById('task-need');
       const offerInput = document.getElementById('task-offer');
       const need = needInput.value.trim();
       const offer = offerInput.value.trim();
-
       if(!need || !offer) return alert("Please fill out both Need and Offer fields.");
 
-      needInput.value = "";
-      offerInput.value = "";
-
-      await broadcast('bazaar', { 
-        type: "TASK_OFFER", 
-        task_id: "task-" + Date.now(), 
-        need, 
-        offer, 
-        author: currentDid 
-      }, 'post-status');
+      needInput.value = ""; offerInput.value = "";
+      await broadcast('bazaar', { type: "TASK_OFFER", task_id: "task-" + Date.now(), need, offer, author: currentDid }, 'post-status');
     };
 
     document.getElementById('live-stream').addEventListener('click', (e) => {
@@ -328,93 +315,119 @@
       broadcast(activeTaskId, { type: "CHAT", message: msg, author: currentDid }).then(() => document.getElementById('chat-input').value = "");
     };
 
-    // --- WEB3 ESCROW ACTIONS ---
+    async function ensureSepoliaNetwork() {
+       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+       if (currentChainId !== '0xaa36a7') {
+         try {
+           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
+         } catch (switchError) {
+           if (switchError.code === 4902) {
+             await window.ethereum.request({
+               method: 'wallet_addEthereumChain',
+               params: [{
+                 chainId: '0xaa36a7', chainName: 'Sepolia Test Network',
+                 nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+                 rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com', 'https://eth-sepolia.public.blastapi.io'],
+                 blockExplorerUrls: ['https://sepolia.etherscan.io']
+               }],
+             });
+           } else throw switchError;
+         }
+       }
+    }
+
+    // --- PURE WEB3 ESCROW ACTIONS ---
     window.fundEscrowWeb3 = async function() {
-      if (typeof window.ethereum === 'undefined') {
-        return alert("MetaMask/Rabby is not installed. Please install a Web3 wallet extension.");
-      }
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask/Rabby is not installed.");
       
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        if (!accounts || accounts.length === 0) throw new Error("No Ethereum account selected.");
-        const userAddress = accounts[0];
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await ensureSepoliaNetwork();
 
-        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (currentChainId !== '0xaa36a7') {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0xaa36a7' }],
-            });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0xaa36a7',
-                  chainName: 'Sepolia Test Network',
-                  nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
-                  rpcUrls: [
-                    'https://ethereum-sepolia-rpc.publicnode.com',
-                    'https://eth-sepolia.public.blastapi.io',
-                    'https://rpc.sepolia.org'
-                  ],
-                  blockExplorerUrls: ['https://sepolia.etherscan.io']
-                }],
-              });
-            } else {
-              throw switchError;
-            }
-          }
-        }
-
-        const amountStr = prompt("Enter amount of Sepolia ETH to lock in escrow:", "0.001");
+        const amountStr = prompt("Enter amount of Sepolia ETH to lock in the smart contract:", "0.001");
         if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Confirm in Wallet...</span>";
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Opening Wallet...</span>";
+        // 1. Write to Blockchain: Fund Task
+        const tx = await contract.fundTask(activeTaskId, { value: ethers.parseEther(amountStr) });
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Awaiting Blockchain Confirmation...</span>";
+        await tx.wait();
 
-        const weiValue = BigInt(Math.floor(Number(amountStr) * 1e18)).toString(16);
-        const mockEscrowAddress = "0x000000000000000000000000000000000000dEaD";
-
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [{
-            from: userAddress,
-            to: mockEscrowAddress,
-            value: '0x' + weiValue
-          }]
-        });
-
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Transaction Broadcasted to Sepolia...</span>";
-
-        await broadcast(activeTaskId, { 
-          type: "ESCROW_FUNDED", 
-          txHash: txHash, 
-          amount: amountStr, 
-          author: currentDid 
-        });
-
+        await broadcast(activeTaskId, { type: "ESCROW_FUNDED", txHash: tx.hash, amount: amountStr, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Awaiting Funds";
-        console.error("Web3 Error:", err);
         alert(`Transaction Notice: ${err.message || err}`);
       }
     };
 
-    window.submitTask = function() {
+    window.submitTask = async function() {
       const link = prompt("Provide link to completed task:");
-      if(link) broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, author: currentDid });
+      if(!link) return;
+
+      let workerEthAddress = null;
+      try {
+         if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            workerEthAddress = accounts[0];
+         }
+      } catch(e) {}
+
+      if (!workerEthAddress) return alert("You must connect your Web3 wallet to submit, so the Offerer knows where to send the funds.");
+
+      broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, workerEth: workerEthAddress, author: currentDid });
     }
+
     window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); }
-    window.releaseEscrow = function() { 
-      broadcast(activeTaskId, { type: "ESCROW_RELEASED", author: currentDid }).then(() => {
-        broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
-      });
+    
+    window.releaseEscrow = async function() { 
+      if (!activeWorkerEthAddress) return alert("Worker did not provide a valid Web3 address.");
+      
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Approving Contract...</span>";
+        
+        // 2. Write to Blockchain: Approve Worker Address
+        const tx = await contract.approveTask(activeTaskId, activeWorkerEthAddress);
+        await tx.wait();
+        
+        await broadcast(activeTaskId, { type: "ESCROW_RELEASED", author: currentDid });
+        await broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
+      } catch(err) {
+        alert(`Approval Failed: ${err.message}`);
+        triggerPoll(); 
+      }
     }
-    window.claimFunds = function() {
-      alert("Prototype Note: In production, this will trigger MetaMask to pull the locked ETH from the Smart Contract to your wallet.");
-      broadcast(activeTaskId, { type: "FUNDS_CLAIMED", author: currentDid });
+
+    window.claimFunds = async function() {
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask/Rabby is not installed.");
+      
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await ensureSepoliaNetwork();
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Claiming Funds...</span>";
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
+        // 3. Write to Blockchain: Pull Funds to Wallet
+        const tx = await contract.claimFunds(activeTaskId);
+        await tx.wait();
+
+        await broadcast(activeTaskId, { type: "FUNDS_CLAIMED", txHash: tx.hash, author: currentDid });
+      } catch (err) {
+        document.getElementById('escrow-status-text').innerHTML = "Escrow: Funds Released (Awaiting Claim)";
+        alert(`Claim Notice: ${err.message || err}`);
+      }
     }
+
     window.openDispute = function() {
       if(confirm("Reject work and open dispute? Bystanders will vote.")) {
          broadcast(activeTaskId, { type: "DISPUTE_OPEN", author: currentDid });
@@ -471,8 +484,8 @@
         let state = "AWAITING_FUNDS";
         let voteRelease = new Set();
         let voteBurn = new Set();
+        activeWorkerEthAddress = null;
         
-        // Process in chronological order
         lines.forEach(line => {
           try {
             const jStart = line.indexOf('{');
@@ -504,6 +517,7 @@
               if (p.payload.type === 'TASK_SUBMITTED') { 
                 state = "SUBMITTED"; 
                 activeWorkerDid = p.did; 
+                if (p.payload.workerEth) activeWorkerEthAddress = p.payload.workerEth;
               }
               if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; 
               if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
@@ -526,8 +540,8 @@
                  if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
                  if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
                  if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
-                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Awaiting worker claim.`;
-                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed to wallet! Transaction Complete.`;
+                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Contract awaiting worker claim.`;
+                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed! (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash ? p.payload.txHash.slice(0,10) : ''}...</a>)`;
                  
                  el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-300 text-xs text-center w-full">${sysMsg}</div>`;
               } else if (p.payload.type === 'CHAT') {
@@ -598,7 +612,7 @@
           statusText.innerHTML = "Escrow: Funds Released (Awaiting Claim)"; 
           statusText.className = "text-sm font-bold text-green-400";
           if (currentDid === activeWorkerDid && isLoggedIn) {
-             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Claim Funds to Wallet</button>`;
+             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Claim Funds from Contract</button>`;
           }
        }
        else if (state === "CLAIMED") {
