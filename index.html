@@ -365,22 +365,28 @@
     };
 
     window.submitTask = async function() {
-      const link = prompt("Provide link to completed task:");
-      if(!link) return;
-
-      let workerEthAddress = null;
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask is required to submit tasks.");
+      
       try {
-         if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            workerEthAddress = accounts[0];
-         }
-      } catch(e) {}
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (!accounts || accounts.length === 0) throw new Error("No wallet connected.");
+        const workerEthAddress = accounts[0];
 
-      if (!workerEthAddress) return alert("You must connect your Web3 wallet to submit, so the Offerer knows where to send the funds.");
+        const link = prompt("Provide link to completed task:");
+        if(!link) return;
 
-      broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, workerEth: workerEthAddress, author: currentDid });
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Submitting Task & Linking Wallet...</span>";
+
+        await broadcast(activeTaskId, { 
+          type: "TASK_SUBMITTED", 
+          data: link, 
+          workerEth: workerEthAddress, 
+          author: currentDid 
+        });
+      } catch (err) {
+        alert(`Submission Failed: ${err.message}`);
+      }
     }
-
     window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); }
     
     window.releaseEscrow = async function() { 
