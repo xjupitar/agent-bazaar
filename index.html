@@ -246,7 +246,7 @@
     document.getElementById('tab-login').onclick = () => switchTab('login');
     document.getElementById('tab-file').onclick = () => switchTab('file');
 
-  // --- POSTING LOGIC ---
+// --- POSTING LOGIC ---
     document.getElementById('post-btn').addEventListener('click', async () => {
       const need = document.getElementById('task-need').value;
       const offer = document.getElementById('task-offer').value;
@@ -269,13 +269,22 @@
 
       const statusEl = document.getElementById('post-status');
       statusEl.className = "text-sm mt-3 text-yellow-600 font-mono font-bold";
-      statusEl.innerText = "Broadcasting...";
+      statusEl.innerText = "Broadcasting via Secure POST...";
       
       try {
-        // UPGRADE: Use the correct Technocore API endpoint for signed messages
-        const postUrl = `${ROOM_URL}/say-signed/${currentDid}/${encodeURIComponent(sigBase64)}/${payload.nonce}/${encodeURIComponent(msgStr)}`;
-        
-        const response = await fetch(postUrl);
+        // UPGRADE: Use a JSON POST request to bypass URL path mangling completely.
+        const response = await fetch(`${ROOM_URL}/say-signed`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            did: currentDid,
+            sig: sigBase64,
+            nonce: payload.nonce,
+            message: msgStr
+          })
+        });
         
         if (!response.ok) {
            const errText = await response.text();
