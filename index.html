@@ -267,24 +267,21 @@
       const signatureBytes = nacl.sign.detached(msgBytes, currentKeypair.secretKey);
       const sigBase64 = bytesToBase64(signatureBytes);
 
+      // Package everything together
+      const finalPackage = { payload: payload, signature: sigBase64, did: currentDid };
+
       const statusEl = document.getElementById('post-status');
       statusEl.className = "text-sm mt-3 text-yellow-600 font-mono font-bold";
-      statusEl.innerText = "Broadcasting via Secure POST...";
+      statusEl.innerText = "Broadcasting...";
       
       try {
-        // UPGRADE: Use a JSON POST request to bypass URL path mangling completely.
-        const response = await fetch(`${ROOM_URL}/say-signed`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            did: currentDid,
-            sig: sigBase64,
-            nonce: payload.nonce,
-            message: msgStr
-          })
-        });
+        // FIX 1: Create a server-safe nickname (lowercase, max 48 chars, no colons)
+        const safeNick = "agent-" + currentDid.slice(-10).toLowerCase();
+        
+        // FIX 2: Use the exact GET route the server requires
+        const postUrl = `${ROOM_URL}/say/${safeNick}/${encodeURIComponent(JSON.stringify(finalPackage))}`;
+        
+        const response = await fetch(postUrl);
         
         if (!response.ok) {
            const errText = await response.text();
@@ -324,24 +321,25 @@
 
         lines.reverse().forEach(line => {
           try {
-            // UPGRADE: Technocore prepends IDs to the line. We must find where the '{' starts to read the JSON.
+            // Find where the JSON payload starts after the nickname
             const jsonStart = line.indexOf('{');
             if (jsonStart === -1) return; 
             
             const jsonStr = line.substring(jsonStart);
             const parsed = JSON.parse(jsonStr);
             
-            if (parsed.type) {
+            // Check if it's our wrapped package format
+            if (parsed.payload && parsed.payload.type) {
               foundValidMessage = true;
               const el = document.createElement('div');
               el.className = "border-b border-gray-700 pb-3 mb-3 break-words";
-              const isMe = parsed.author === currentDid ? " (YOU)" : "";
-              const header = `<span class="text-yellow-400">[${parsed.type}]</span> <span class="text-blue-300" title="${parsed.author}">User: ...${parsed.author.slice(-10)}${isMe}</span>`;
+              const isMe = parsed.did === currentDid ? " (YOU)" : "";
+              const header = `<span class="text-yellow-400">[${parsed.payload.type}]</span> <span class="text-blue-300" title="${parsed.did}">User: ...${parsed.did.slice(-10)}${isMe}</span>`;
               
-              if(parsed.type === 'TASK_OFFER') {
-                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.need}<br/><span class="text-white">OFFER:</span> ${parsed.offer}`;
+              if(parsed.payload.type === 'TASK_OFFER') {
+                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.payload.need}<br/><span class="text-white">OFFER:</span> ${parsed.payload.offer}`;
               } else {
-                el.innerHTML = `${header}<br/>${JSON.stringify(parsed)}`;
+                el.innerHTML = `${header}<br/>${JSON.stringify(parsed.payload)}`;
               }
               streamDiv.appendChild(el);
             }
