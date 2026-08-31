@@ -246,7 +246,7 @@
     document.getElementById('tab-login').onclick = () => switchTab('login');
     document.getElementById('tab-file').onclick = () => switchTab('file');
 
-    // --- POSTING LOGIC ---
+   // --- POSTING LOGIC ---
     document.getElementById('post-btn').addEventListener('click', async () => {
       const need = document.getElementById('task-need').value;
       const offer = document.getElementById('task-offer').value;
@@ -340,54 +340,6 @@
 
       } catch (err) {
         streamDiv.innerHTML = `<span class="text-red-500 font-bold">Connection Error:</span><br/>${err.message}`;
-      }
-    }
-
-    document.getElementById('refresh-btn').addEventListener('click', pollRoom);
-    pollRoom();
-
-    // --- FETCH LOGIC ---
-async function pollRoom() {
-      const streamDiv = document.getElementById('live-stream');
-      try {
-        const response = await fetch(ROOM_URL);
-        const text = await response.text();
-        const lines = text.split('\n').filter(l => l.trim() !== '');
-        
-        if (lines.length === 0) {
-          streamDiv.innerHTML = "No tasks found on server.";
-          return;
-        }
-
-        streamDiv.innerHTML = "";
-        let foundValidMessage = false;
-
-        lines.reverse().forEach(line => {
-          try {
-            const parsed = JSON.parse(line);
-            if (parsed.payload && parsed.payload.type) {
-              foundValidMessage = true;
-              const el = document.createElement('div');
-              el.className = "border-b border-gray-700 pb-3 mb-3 break-words";
-              const isMe = parsed.did === currentDid ? " (YOU)" : "";
-              const header = `<span class="text-yellow-400">[${parsed.payload.type}]</span> <span class="text-blue-300" title="${parsed.did}">User: ...${parsed.did.slice(-10)}${isMe}</span>`;
-              
-              if(parsed.payload.type === 'TASK_OFFER') {
-                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.payload.need}<br/><span class="text-white">OFFER:</span> ${parsed.payload.offer}`;
-              } else {
-                el.innerHTML = `${header}<br/>${JSON.stringify(parsed.payload)}`;
-              }
-              streamDiv.appendChild(el);
-            }
-          } catch(e) { } 
-        });
-
-        if (!foundValidMessage) {
-          streamDiv.innerHTML = `<span class="text-red-400">Server returned non-data text. Raw response:<br/><br/>${text.substring(0, 150)}...</span>`;
-        }
-
-      } catch (err) {
-        streamDiv.innerHTML = `<span class="text-red-500 font-bold">Browser Blocked Request (CORS) or Server Down:</span><br/>${err.message}`;
       }
     }
 
