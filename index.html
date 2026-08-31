@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Barter Bazaar | Live Web3 Escrow</title>
+  <title>Agent Barter Bazaar | On-Chain Index Escrow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
@@ -13,11 +13,10 @@
     <div class="flex justify-between items-end mb-6">
       <div>
         <h1 class="text-3xl font-bold text-indigo-700">Autonomous Agent Bazaar</h1>
-        <p class="text-gray-500 text-sm">Decentralized Escrow (Live Smart Contract)</p>
+        <p class="text-gray-500 text-sm">Decentralized Escrow (On-Chain Mapped Indexing)</p>
       </div>
     </div>
     
-    <!-- IDENTITY MANAGER -->
     <div class="bg-indigo-50 p-4 rounded mb-6 border border-indigo-200">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-bold text-indigo-900">Agent Identity</h2>
@@ -74,7 +73,6 @@
       </div>
     </div>
 
-    <!-- MAIN BAZAAR -->
     <div id="view-main" class="block">
       <div id="broadcast-box" class="hidden bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
         <h2 class="font-bold mb-3">Broadcast Task</h2>
@@ -92,7 +90,6 @@
       </div>
     </div>
 
-    <!-- SUBROOM CHAT & ESCROW -->
     <div id="view-subroom" class="hidden">
       <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[800px]">
         <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
@@ -102,7 +99,6 @@
         
         <div id="subroom-task-details" class="bg-gray-800 p-4 border-b border-gray-700 text-sm"></div>
         
-        <!-- ESCROW DASHBOARD -->
         <div id="escrow-dashboard" class="bg-gray-800 p-4 border-b border-gray-700">
            <div class="flex justify-between items-center">
              <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
@@ -134,18 +130,19 @@
     
     // =========================================================
     // SMART CONTRACT CONFIGURATION
-    const CONTRACT_ADDRESS = "0xdeF6000817FbD6DD5a17ac84D50558540112335b"; 
+    const CONTRACT_ADDRESS = 0xBe7230FFf804A70b2c0CEFA61fF875cF614Cc76b; 
     // =========================================================
 
     const ESCROW_ABI = [
       "function fundTask(string memory taskId) external payable",
-      "function approveTask(string memory taskId, address worker) external",
+      "function submitTask(string memory taskId, string memory taskData) external",
+      "function approveTask(string memory taskId) external",
       "function claimFunds(string memory taskId) external"
     ];
 
     let currentKeypair = null; let currentDid = null; let currentName = ""; let encryptedBackupCache = null; 
     let activeRoom = 'bazaar'; let activeTaskId = null; let activeTaskAuthorDid = null; 
-    let activeWorkerDid = null; let activeWorkerEthAddress = null; 
+    let activeWorkerDid = null; 
     let pollTimer = null; let globalReputation = {}; 
     const HOST = "https://technocore.chat/r";
 
@@ -336,109 +333,97 @@
        }
     }
 
-    // --- PURE WEB3 ESCROW ACTIONS ---
+    // --- ON-CHAIN SMART CONTRACT ACTIONS ---
     window.fundEscrowWeb3 = async function() {
-      if (typeof window.ethereum === 'undefined') return alert("MetaMask/Rabby is not installed.");
-      
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask is not installed.");
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
 
-        const amountStr = prompt("Enter amount of Sepolia ETH to lock in the smart contract:", "0.001");
+        const amountStr = prompt("Enter amount of Sepolia ETH to lock in smart contract:", "0.001");
         if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Confirm in Wallet...</span>";
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Confirm Funding in MetaMask...</span>";
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        // 1. Write to Blockchain: Fund Task
         const tx = await contract.fundTask(activeTaskId, { value: ethers.parseEther(amountStr) });
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Awaiting Blockchain Confirmation...</span>";
         await tx.wait();
 
         await broadcast(activeTaskId, { type: "ESCROW_FUNDED", txHash: tx.hash, amount: amountStr, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Awaiting Funds";
-        alert(`Transaction Notice: ${err.message || err}`);
+        alert(`Funding Error: ${err.reason || err.message}`);
       }
     };
 
     window.submitTask = async function() {
-      if (typeof window.ethereum === 'undefined') return alert("MetaMask is required to submit tasks.");
-      
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask is required.");
+      const link = prompt("Provide link to completed task:");
+      if(!link) return;
+
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        if (!accounts || accounts.length === 0) throw new Error("No wallet connected.");
-        const workerEthAddress = accounts[0];
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await ensureSepoliaNetwork();
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Submitting Work to Smart Contract...</span>";
 
-        const link = prompt("Provide link to completed task:");
-        if(!link) return;
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
+        // INTERACT: Calls submitTask directly on-chain, mapping sender as worker
+        const tx = await contract.submitTask(activeTaskId, link);
+        await tx.wait();
 
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Submitting Task & Linking Wallet...</span>";
-
-        await broadcast(activeTaskId, { 
-          type: "TASK_SUBMITTED", 
-          data: link, 
-          workerEth: workerEthAddress, 
-          author: currentDid 
-        });
+        await broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, txHash: tx.hash, author: currentDid });
       } catch (err) {
-        alert(`Submission Failed: ${err.message}`);
+        document.getElementById('escrow-status-text').innerHTML = "Escrow: Funded (Working Phase)";
+        alert(`Submission Error: ${err.reason || err.message}`);
       }
     }
+
     window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); }
     
     window.releaseEscrow = async function() { 
-      if (!activeWorkerEthAddress) {
-        return alert("Error: No valid Web3 worker address found. Ensure the worker submitted tasks while connected to MetaMask.");
-      }
-      
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Broadcasting Approval to Sepolia...</span>";
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Approving Task on Smart Contract...</span>";
         
-        // 1. Send the transaction to the smart contract
-        const tx = await contract.approveTask(activeTaskId, activeWorkerEthAddress);
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Waiting for Block Confirmation...</span>";
+        // INTERACT: Approves the task matching the on-chain submission mapping
+        const tx = await contract.approveTask(activeTaskId);
+        await tx.wait();
         
-        // 2. FORCE code to wait until the transaction is actually mined into a block
-        const receipt = await tx.wait();
-        console.log("Contract Approval Mined:", receipt);
-
-        // 3. Only broadcast room completion AFTER the blockchain confirms it
         await broadcast(activeTaskId, { type: "ESCROW_RELEASED", txHash: tx.hash, author: currentDid });
         await broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
       } catch(err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Task Submitted (Review Phase)";
-        alert(`Approval Failed on-chain: ${err.reason || err.message}`);
-        triggerPoll(); 
+        alert(`Approval Error: ${err.reason || err.message}`);
       }
     }
 
     window.claimFunds = async function() {
-      if (typeof window.ethereum === 'undefined') return alert("MetaMask/Rabby is not installed.");
-      
+      if (typeof window.ethereum === 'undefined') return alert("MetaMask is not installed.");
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Claiming Funds...</span>";
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Pulling Funds from Contract...</span>";
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        // 3. Write to Blockchain: Pull Funds to Wallet
+        // INTERACT: Pulls funds securely as the approved worker
         const tx = await contract.claimFunds(activeTaskId);
         await tx.wait();
 
         await broadcast(activeTaskId, { type: "FUNDS_CLAIMED", txHash: tx.hash, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Funds Released (Awaiting Claim)";
-        alert(`Claim Notice: ${err.message || err}`);
+        alert(`Claim Error: ${err.reason || err.message}`);
       }
     }
 
@@ -498,7 +483,6 @@
         let state = "AWAITING_FUNDS";
         let voteRelease = new Set();
         let voteBurn = new Set();
-        activeWorkerEthAddress = null;
         
         lines.forEach(line => {
           try {
@@ -531,7 +515,6 @@
               if (p.payload.type === 'TASK_SUBMITTED') { 
                 state = "SUBMITTED"; 
                 activeWorkerDid = p.did; 
-                if (p.payload.workerEth) activeWorkerEthAddress = p.payload.workerEth;
               }
               if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; 
               if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
@@ -550,12 +533,12 @@
                  el.className = `flex justify-center mb-4`;
                  let sysMsg = `System: ${p.payload.type}`;
                  if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
-                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted: <a href="${p.payload.data}" class="text-blue-400 underline" target="_blank">${p.payload.data}</a>`;
+                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted On-Chain: <a href="${p.payload.data}" class="text-blue-400 underline" target="_blank">${p.payload.data}</a>`;
                  if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
                  if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
                  if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
-                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved & Released! Contract awaiting worker claim.`;
-                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed! (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash ? p.payload.txHash.slice(0,10) : ''}...</a>)`;
+                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved On-Chain! Contract awaiting worker claim.`;
+                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed from contract!`;
                  
                  el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-300 text-xs text-center w-full">${sysMsg}</div>`;
               } else if (p.payload.type === 'CHAT') {
@@ -600,7 +583,7 @@
           statusText.innerHTML = "Escrow: Funded (Working Phase)"; 
           statusText.className = "text-sm font-bold text-blue-400";
           if (!isOfferer && isLoggedIn) {
-            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task</button>`;
+            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task On-Chain</button>`;
           }
        }
        else if (state === "SUBMITTED") {
@@ -610,7 +593,7 @@
              actionContainer.innerHTML = `
                <button onclick="requestRevision()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Request Revision</button>
                <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Reject & Dispute</button>
-               <button onclick="releaseEscrow()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Approve & Release</button>
+               <button onclick="releaseEscrow()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Approve Work</button>
              `;
           } else if (!isOfferer && isLoggedIn) {
              actionContainer.innerHTML = `<span class="text-xs text-gray-400 italic">Waiting for offerer review...</span>`;
