@@ -296,16 +296,14 @@
     // --- WEB3 ESCROW ACTIONS ---
     window.fundEscrowWeb3 = async function() {
       if (typeof window.ethereum === 'undefined') {
-        return alert("MetaMask is not installed. Please install a Web3 wallet extension.");
+        return alert("MetaMask/Rabby is not installed. Please install a Web3 wallet extension.");
       }
       
       try {
-        // 1. Request Account Access (triggers MetaMask connection popup)
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         if (!accounts || accounts.length === 0) throw new Error("No Ethereum account selected.");
         const userAddress = accounts[0];
 
-        // 2. Ensure Sepolia Network (Chain ID: 0xaa36a7 / 11155111)
         const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
         if (currentChainId !== '0xaa36a7') {
           try {
@@ -314,7 +312,6 @@
               params: [{ chainId: '0xaa36a7' }],
             });
           } catch (switchError) {
-            // Error code 4902: Chain not yet added to MetaMask
             if (switchError.code === 4902) {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
@@ -322,7 +319,12 @@
                   chainId: '0xaa36a7',
                   chainName: 'Sepolia Test Network',
                   nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
-                  rpcUrls: ['https://rpc.sepolia.org'],
+                  // Providing a robust list of free public RPCs so wallets don't crash
+                  rpcUrls: [
+                    'https://ethereum-sepolia-rpc.publicnode.com',
+                    'https://eth-sepolia.public.blastapi.io',
+                    'https://rpc.sepolia.org'
+                  ],
                   blockExplorerUrls: ['https://sepolia.etherscan.io']
                 }],
               });
@@ -332,17 +334,14 @@
           }
         }
 
-        // 3. Prompt for deposit amount
         const amountStr = prompt("Enter amount of Sepolia ETH to lock in escrow:", "0.001");
         if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
         
-        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Opening MetaMask...</span>";
+        document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Opening Wallet...</span>";
 
-        // Convert ETH amount to Hex Wei for raw RPC
         const weiValue = BigInt(Math.floor(Number(amountStr) * 1e18)).toString(16);
         const mockEscrowAddress = "0x000000000000000000000000000000000000dEaD";
 
-        // 4. Trigger MetaMask Native Transaction Popup Directly
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
           params: [{
@@ -354,7 +353,6 @@
 
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Transaction Broadcasted to Sepolia...</span>";
 
-        // 5. Broadcast confirmation to subroom
         await broadcast(activeTaskId, { 
           type: "ESCROW_FUNDED", 
           txHash: txHash, 
