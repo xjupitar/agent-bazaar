@@ -112,7 +112,7 @@
            </div>
            <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-gray-700">
              <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
-             <p class="text-xs text-gray-400 mb-2">Requires Reputation $\geq$ 1 to vote. (10% Voter Bounty Pool Active)</p>
+             <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote. (10% Voter Bounty Pool Active)</p>
              <div class="flex gap-2">
                <button onclick="castVote('RELEASE')" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
                <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
@@ -233,7 +233,6 @@
 
     document.getElementById('download-btn').addEventListener('click', () => {
       if(!encryptedBackupCache) {
-          // Re-fetch from localStorage in case it wasn't cached yet in this session
           const p = localStorage.getItem('agentProfile');
           if(p) encryptedBackupCache = p;
           else return;
@@ -293,7 +292,6 @@
 
       if(!need || !offer) return alert("Please fill out both Need and Offer fields.");
 
-      // Clear the input fields immediately so double-clicks don't re-post
       needInput.value = "";
       offerInput.value = "";
 
@@ -495,11 +493,9 @@
                 </div>
                 <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-authorname="${nameDisp}" data-authordid="${p.payload.author}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded font-bold shadow transition-colors">Negotiate</button>
               `;
-              // Push newest tasks to the TOP of the Bazaar feed
               streamDiv.insertBefore(el, streamDiv.firstChild); 
             } 
             else if (activeRoom !== 'bazaar') {
-              // Proper chronological State Progression for Subrooms
               if (p.payload.type === 'ESCROW_FUNDED') state = "FUNDED";
               if (p.payload.type === 'TASK_SUBMITTED') { 
                 state = "SUBMITTED"; 
@@ -532,7 +528,6 @@
                  el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
                  el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-lg max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'}">${p.payload.message}</div>`;
               }
-              // Push newest messages to the BOTTOM of the chat feed
               streamDiv.appendChild(el);
             }
           } catch(e) { } 
@@ -544,7 +539,6 @@
         }
 
       } catch (err) {
-        // This ensures the error actually overwrites the "Loading network data..." text
         if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Loading")) {
            streamDiv.innerHTML = `<p class="text-red-500 text-sm">Network error: ${err.message}. Retrying...</p>`;
         }
@@ -603,3 +597,8 @@
           statusText.className = "text-sm font-bold text-gray-500";
        }
     }
+
+    triggerPoll();
+  </script>
+</body>
+</html>
