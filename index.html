@@ -268,20 +268,83 @@
       const sigBase64 = bytesToBase64(signatureBytes);
 
       const finalPackage = { payload: payload, signature: sigBase64, did: currentDid };
-      document.getElementById('post-status').innerText = "Broadcasting...";
+      const statusEl = document.getElementById('post-status');
+      statusEl.className = "text-sm mt-3 text-yellow-600 font-mono font-bold";
+      statusEl.innerText = "Broadcasting...";
       
       try {
         const urlParams = new URLSearchParams({ msg: JSON.stringify(finalPackage) });
-        await fetch(`${ROOM_URL}?${urlParams.toString()}`);
-        document.getElementById('post-status').innerText = "✅ Successfully posted!";
-        setTimeout(() => document.getElementById('post-status').innerText = "", 4000);
+        const response = await fetch(`${ROOM_URL}?${urlParams.toString()}`);
+        
+        // UPGRADE: Actually check if the server accepted it
+        if (!response.ok) {
+           const errText = await response.text();
+           throw new Error(`Server Error ${response.status}: ${errText}`);
+        }
+
+        statusEl.className = "text-sm mt-3 text-green-600 font-mono font-bold";
+        statusEl.innerText = "✅ Successfully posted!";
+        setTimeout(() => statusEl.innerText = "", 4000);
         document.getElementById('task-need').value = "";
         document.getElementById('task-offer').value = "";
         pollRoom();
       } catch (err) {
-        document.getElementById('post-status').innerText = "Error: " + err.message;
+        statusEl.className = "text-sm mt-3 text-red-600 font-mono font-bold";
+        statusEl.innerText = "Failed to post: " + err.message;
       }
     });
+
+    // --- FETCH LOGIC ---
+    async function pollRoom() {
+      const streamDiv = document.getElementById('live-stream');
+      try {
+        const response = await fetch(ROOM_URL);
+        const text = await response.text();
+        
+        // UPGRADE: Ignore lines that are empty or start with '#' (Server headers)
+        const lines = text.split('\n')
+                          .map(l => l.trim())
+                          .filter(l => l !== '' && !l.startsWith('#'));
+        
+        if (lines.length === 0) {
+          streamDiv.innerHTML = "<span class='text-gray-400'>No tasks found in the room yet. Be the first to post!</span>";
+          return;
+        }
+
+        streamDiv.innerHTML = "";
+        let foundValidMessage = false;
+
+        lines.reverse().forEach(line => {
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.payload && parsed.payload.type) {
+              foundValidMessage = true;
+              const el = document.createElement('div');
+              el.className = "border-b border-gray-700 pb-3 mb-3 break-words";
+              const isMe = parsed.did === currentDid ? " (YOU)" : "";
+              const header = `<span class="text-yellow-400">[${parsed.payload.type}]</span> <span class="text-blue-300" title="${parsed.did}">User: ...${parsed.did.slice(-10)}${isMe}</span>`;
+              
+              if(parsed.payload.type === 'TASK_OFFER') {
+                el.innerHTML = `${header}<br/><span class="text-white">NEED:</span> ${parsed.payload.need}<br/><span class="text-white">OFFER:</span> ${parsed.payload.offer}`;
+              } else {
+                el.innerHTML = `${header}<br/>${JSON.stringify(parsed.payload)}`;
+              }
+              streamDiv.appendChild(el);
+            }
+          } catch(e) { } 
+        });
+
+        if (!foundValidMessage) {
+          streamDiv.innerHTML = `<span class="text-red-400">Server returned text, but no valid JSON tasks found.</span>`;
+        }
+
+      } catch (err) {
+        streamDiv.innerHTML = `<span class="text-red-500 font-bold">Connection Error:</span><br/>${err.message}`;
+      }
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', pollRoom);
+    pollRoom();
 
     // --- FETCH LOGIC ---
 async function pollRoom() {
