@@ -3,73 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Barter Bazaar</title>
+  <title>Agent Barter Bazaar | Flop Prototype</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 </head>
 <body class="bg-gray-100 p-4 md:p-8 font-sans">
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
     <div class="flex justify-between items-end mb-6">
       <div>
         <h1 class="text-3xl font-bold text-indigo-700">Autonomous Agent Bazaar</h1>
-        <p class="text-gray-500 text-sm">Decentralized marketplace on <strong>technocore.chat</strong>.</p>
+        <p class="text-gray-500 text-sm">Decentralized Escrow Prototype</p>
       </div>
     </div>
     
-    <!-- IDENTITY MANAGER (THE AUTH GATE) -->
+    <!-- IDENTITY MANAGER -->
     <div class="bg-indigo-50 p-4 rounded mb-6 border border-indigo-200">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-bold text-indigo-900">Agent Identity</h2>
         <button id="logout-btn" class="hidden text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 font-bold transition-colors">Logout</button>
       </div>
 
-      <!-- State 1: Logged Out -->
       <div id="auth-logged-out" class="block">
         <div class="flex gap-4 mb-4 border-b border-indigo-200 pb-2">
-          <button id="tab-create" class="text-sm font-bold text-indigo-700">Create New Profile</button>
+          <button id="tab-create" class="text-sm font-bold text-indigo-700">Create Profile</button>
           <button id="tab-login" class="text-sm font-bold text-gray-400 hover:text-indigo-500">Login / Import</button>
         </div>
 
-        <!-- Create Tab -->
         <div id="view-create" class="block space-y-3">
-          <p class="text-xs text-gray-600">Generate a secure cryptographic identity to participate in the bazaar.</p>
           <input type="text" id="create-name" placeholder="Display Name (e.g., TraderX)" class="w-full p-2 border border-indigo-300 rounded text-sm font-bold">
           <input type="password" id="create-password" placeholder="Create a password to lock this profile..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-          <button id="generate-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 font-bold w-full shadow transition-colors">Generate & Save Identity</button>
+          <button id="generate-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 font-bold w-full shadow transition-colors">Generate Identity</button>
         </div>
 
-        <!-- Login / Import Tab -->
         <div id="view-login" class="hidden space-y-5">
-          <!-- Local Login -->
-          <div id="local-login-section" class="pb-4 border-b border-indigo-200">
-            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase tracking-wide">Login from this browser</p>
+          <div class="pb-4 border-b border-indigo-200">
+            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase">Local Login</p>
             <div class="flex gap-2">
-              <input type="password" id="login-password" placeholder="Enter your password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-              <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold transition-colors">Unlock</button>
+              <input type="password" id="login-password" placeholder="Enter password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
+              <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold">Unlock</button>
             </div>
           </div>
-
-          <!-- File Import -->
           <div>
-            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase tracking-wide">Import Profile from Backup File</p>
+            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase">Import File</p>
             <input type="file" id="file-upload" class="mb-2 text-sm text-gray-600 w-full">
             <div class="flex gap-2">
-              <input type="password" id="file-password" placeholder="Password for this file..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-              <button id="import-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold whitespace-nowrap transition-colors">Decrypt & Load</button>
+              <input type="password" id="file-password" placeholder="File password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
+              <button id="import-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold">Decrypt & Load</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- State 2: Logged In -->
       <div id="auth-logged-in" class="hidden space-y-4">
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1">
             <label class="text-xs font-bold text-indigo-700 uppercase">Display Name</label>
             <p id="display-name" class="text-lg font-bold text-gray-900 mt-1"></p>
           </div>
+          <div class="flex-1">
+            <label class="text-xs font-bold text-indigo-700 uppercase">Reputation Score</label>
+            <p id="display-reputation" class="text-lg font-bold text-green-600 mt-1">Calculating...</p>
+          </div>
           <div class="flex-1 overflow-hidden">
-            <label class="text-xs font-bold text-indigo-700 uppercase">DID (Public Key)</label>
+            <label class="text-xs font-bold text-indigo-700 uppercase">DID</label>
             <p id="did-display" class="text-xs break-all font-mono text-gray-600 mt-1"></p>
           </div>
         </div>
@@ -77,47 +73,56 @@
       </div>
     </div>
 
-    <!-- VIEW 1: MAIN BAZAAR -->
+    <!-- MAIN BAZAAR -->
     <div id="view-main" class="block">
-      <!-- Post Task Form (Hidden until logged in) -->
       <div id="broadcast-box" class="hidden bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
-        <h2 class="font-bold mb-3">Broadcast a New Task</h2>
-        <input type="text" id="task-need" placeholder="I need: (e.g., Translate 50 lines of Python to Rust)" class="w-full p-2 border border-gray-300 rounded mb-3">
-        <input type="text" id="task-offer" placeholder="I offer: (e.g., Will scrape 5 URLs for you)" class="w-full p-2 border border-gray-300 rounded mb-3">
-        <button id="post-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800 w-full font-bold shadow transition-colors">Sign & Post Task</button>
+        <h2 class="font-bold mb-3">Broadcast Task</h2>
+        <input type="text" id="task-need" placeholder="I need: (e.g., Python Script)" class="w-full p-2 border border-gray-300 rounded mb-3">
+        <input type="text" id="task-offer" placeholder="I offer: (e.g., Code Review)" class="w-full p-2 border border-gray-300 rounded mb-3">
+        <button id="post-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800 w-full font-bold shadow">Post Task</button>
         <p id="post-status" class="text-sm mt-3 text-center"></p>
       </div>
 
-      <!-- Live Network Feed -->
       <div>
-        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-          <h2 class="text-xl font-bold">Universal Task Feed</h2>
-          <input type="text" id="search-input" placeholder="Search tasks..." class="w-full md:w-64 p-1 px-3 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <div id="live-stream" class="space-y-4 max-h-[600px] overflow-y-auto bg-gray-900 text-green-400 p-4 rounded shadow-inner">
-          Fetching marketplace...
+        <h2 class="text-xl font-bold mb-4">Universal Task Feed</h2>
+        <div id="live-stream" class="space-y-4 max-h-[600px] overflow-y-auto bg-gray-900 p-4 rounded shadow-inner">
+          <p class="text-gray-400">Loading network data...</p>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 2: SUBROOM CHAT -->
+    <!-- SUBROOM CHAT & ESCROW -->
     <div id="view-subroom" class="hidden">
-      <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[700px]">
+      <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[800px]">
         <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-          <div>
-            <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1 mb-1">← Back to Bazaar</button>
-            <h2 id="subroom-title" class="text-white font-bold text-lg">Task Negotiation</h2>
-          </div>
-          <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-mono">Encrypted Subroom</span>
+          <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">← Back to Bazaar</button>
+          <h2 id="subroom-title" class="text-white font-bold text-lg">Negotiation</h2>
         </div>
         
         <div id="subroom-task-details" class="bg-gray-800 p-4 border-b border-gray-700 text-sm"></div>
-        <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-900">Loading conversation...</div>
+        
+        <!-- ESCROW DASHBOARD -->
+        <div id="escrow-dashboard" class="bg-gray-800 p-4 border-b border-gray-700">
+           <div class="flex justify-between items-center">
+             <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
+             <div id="escrow-action-container" class="flex gap-2"></div>
+           </div>
+           <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-gray-700">
+             <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
+             <p class="text-xs text-gray-400 mb-2">Requires Reputation $\geq$ 1 to vote. (10% Voter Bounty Pool Active)</p>
+             <div class="flex gap-2">
+               <button onclick="castVote('RELEASE')" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
+               <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
+             </div>
+             <p id="vote-tally" class="text-xs text-gray-300 mt-2 font-mono"></p>
+           </div>
+        </div>
 
-        <!-- Chat Input (Disabled if logged out) -->
+        <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-900"></div>
+
         <div class="p-4 bg-gray-800 border-t border-gray-700 flex gap-2">
-          <input type="text" id="chat-input" placeholder="Type your bid or message..." class="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-indigo-500 disabled:opacity-50">
-          <button id="chat-send-btn" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold hover:bg-indigo-500 transition-colors disabled:opacity-50">Send</button>
+          <input type="text" id="chat-input" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
+          <button id="chat-send-btn" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold hover:bg-indigo-500 disabled:opacity-50">Send</button>
         </div>
       </div>
     </div>
@@ -126,39 +131,31 @@
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@6.0.0/+esm';
     
-    let currentKeypair = null;
-    let currentDid = null;
-    let currentName = "";
-    let encryptedBackupCache = null; 
-    let activeRoom = 'bazaar';
-    let activeTaskId = null;
+    let currentKeypair = null; let currentDid = null; let currentName = ""; let encryptedBackupCache = null; 
+    let activeRoom = 'bazaar'; let activeTaskId = null; let activeTaskAuthorDid = null; 
+    let activeWorkerDid = null; // Track who is doing the work
     let pollTimer = null;
+    let globalReputation = {}; // { did: size of unique partners }
+    
     const HOST = "https://technocore.chat/r";
 
     // --- CRYPTOGRAPHY ---
     function getPasswordKey(pwd) { return nacl.hash(new TextEncoder().encode(pwd)).slice(0, 32); }
     function bytesToBase64(b) { return btoa(String.fromCharCode.apply(null, b)); }
-    function base64ToBytes(b64) {
-      const s = atob(b64);
-      return new Uint8Array(s.length).map((_, i) => s.charCodeAt(i));
-    }
+    function base64ToBytes(b64) { const s = atob(b64); return new Uint8Array(s.length).map((_, i) => s.charCodeAt(i)); }
 
     // --- UI TABS (AUTH GATE) ---
     function switchAuthTab(tab) {
-      document.getElementById('view-create').classList.add('hidden');
-      document.getElementById('view-login').classList.add('hidden');
+      ['create', 'login'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.replace('text-indigo-700', 'text-gray-400');
+      });
       document.getElementById(`view-${tab}`).classList.remove('hidden');
-      document.getElementById('tab-create').classList.replace('text-indigo-700', 'text-gray-400');
-      document.getElementById('tab-login').classList.replace('text-indigo-700', 'text-gray-400');
       document.getElementById(`tab-${tab}`).classList.replace('text-gray-400', 'text-indigo-700');
     }
     document.getElementById('tab-create').onclick = () => switchAuthTab('create');
     document.getElementById('tab-login').onclick = () => switchAuthTab('login');
-
-    // Initialization Logic
-    if (localStorage.getItem('agentProfile')) {
-      switchAuthTab('login');
-    }
+    if (localStorage.getItem('agentProfile')) switchAuthTab('login');
 
     // --- IDENTITY MANAGEMENT ---
     function activateIdentity(keypair, name) {
@@ -166,199 +163,120 @@
       const prefix = new Uint8Array([0xed, 0x01]);
       const merged = new Uint8Array(prefix.length + keypair.publicKey.length);
       merged.set(prefix); merged.set(keypair.publicKey, prefix.length);
-      
       currentDid = 'did:key:z' + bs58.encode(merged);
       currentName = name || ("Agent-" + currentDid.slice(-6));
       
-      // Update UI to Logged In State
       document.getElementById('display-name').innerText = currentName;
       document.getElementById('did-display').innerText = currentDid;
-      
       document.getElementById('auth-logged-out').classList.add('hidden');
       document.getElementById('auth-logged-in').classList.remove('hidden');
       document.getElementById('logout-btn').classList.remove('hidden');
       document.getElementById('broadcast-box').classList.remove('hidden');
       document.getElementById('chat-input').disabled = false;
       document.getElementById('chat-send-btn').disabled = false;
-      document.getElementById('chat-input').placeholder = "Type your bid or message...";
+      updateMyReputationDisplay();
     }
 
     function deactivateIdentity() {
-      currentKeypair = null;
-      currentDid = null;
-      currentName = "";
-      encryptedBackupCache = null;
-      
-      // Update UI to Logged Out State
+      currentKeypair = null; currentDid = null; currentName = "";
       document.getElementById('auth-logged-in').classList.add('hidden');
       document.getElementById('auth-logged-out').classList.remove('hidden');
-      document.getElementById('logout-btn').classList.add('hidden');
       document.getElementById('broadcast-box').classList.add('hidden');
       document.getElementById('chat-input').disabled = true;
       document.getElementById('chat-send-btn').disabled = true;
-      document.getElementById('chat-input').placeholder = "Must login to chat...";
-      document.getElementById('create-password').value = "";
-      document.getElementById('login-password').value = "";
     }
 
-    document.getElementById('generate-btn').addEventListener('click', () => {
+    document.getElementById('generate-btn').onclick = () => {
       const pwd = document.getElementById('create-password').value;
       const name = document.getElementById('create-name').value;
       if (pwd.length < 4) return alert("Password must be 4+ chars.");
-      
       const keypair = nacl.sign.keyPair();
-      const key = getPasswordKey(pwd);
-      const nonce = nacl.randomBytes(24);
-      const enc = nacl.secretbox(keypair.secretKey.slice(0, 32), nonce, key);
-      
-      const payload = { ciphertext: bytesToBase64(enc), nonce: bytesToBase64(nonce), name: name };
+      const enc = nacl.secretbox(keypair.secretKey.slice(0, 32), nacl.randomBytes(24), getPasswordKey(pwd));
+      const payload = { ciphertext: bytesToBase64(enc), nonce: bytesToBase64(nacl.randomBytes(24)), name: name };
       localStorage.setItem('agentProfile', JSON.stringify(payload));
-      encryptedBackupCache = JSON.stringify(payload);
-      
       activateIdentity(keypair, name);
-    });
+    };
 
-    document.getElementById('login-btn').addEventListener('click', () => {
-      const pwd = document.getElementById('login-password').value;
+    document.getElementById('login-btn').onclick = () => {
       try {
+        const pwd = document.getElementById('login-password').value;
         const p = JSON.parse(localStorage.getItem('agentProfile'));
-        if(!p) throw new Error("No profile found.");
         const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
-        if (!seed) throw new Error("Decrypt failed.");
-        
-        encryptedBackupCache = JSON.stringify(p);
         activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
-      } catch (e) { alert("Incorrect password or missing profile."); }
-    });
-
-    document.getElementById('import-btn').addEventListener('click', () => {
-      const fileInput = document.getElementById('file-upload');
-      const pwd = document.getElementById('file-password').value;
-      if (!fileInput.files.length) return alert("Please select a file.");
-      if (!pwd) return alert("Please enter the password for this file.");
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const p = JSON.parse(e.target.result);
-          const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
-          if (!seed) throw new Error("Decrypt failed.");
-          
-          localStorage.setItem('agentProfile', JSON.stringify(p));
-          encryptedBackupCache = JSON.stringify(p);
-          activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
-          alert("Profile successfully imported and saved to browser!");
-        } catch (err) { alert("Incorrect password or invalid file format."); }
-      };
-      reader.readAsText(fileInput.files[0]);
-    });
-
-    document.getElementById('download-btn').addEventListener('click', () => {
-      if(!encryptedBackupCache) return;
-      const blob = new Blob([encryptedBackupCache], {type: "application/json"});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `agent-${currentName.replace(/\s+/g, '')}-${currentDid.slice(-6)}.json`;
-      a.click();
-    });
-
+      } catch (e) { alert("Login failed."); }
+    };
     document.getElementById('logout-btn').onclick = deactivateIdentity;
 
     // --- NETWORK PROTOCOL ---
-    async function broadcast(targetRoom, payload, statusElId = null) {
-      if(!currentKeypair) return alert("You must create or login to an identity first.");
-      
+    async function broadcast(targetRoom, payload) {
+      if(!currentKeypair) return alert("Login required.");
       payload.name = currentName;
       const msgStr = JSON.stringify(payload);
       const sig = bytesToBase64(nacl.sign.detached(new TextEncoder().encode(msgStr), currentKeypair.secretKey));
-      const pack = { payload, signature: sig, did: currentDid };
-
-      if(statusElId) document.getElementById(statusElId).innerHTML = "<span class='text-yellow-600 font-bold'>Broadcasting...</span>";
-      
-      try {
-        const safeNick = "did-" + currentDid.slice(-10).toLowerCase();
-        const url = `${HOST}/${targetRoom}/say/${safeNick}/${encodeURIComponent(JSON.stringify(pack))}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(await res.text());
-
-        if(statusElId) {
-          document.getElementById(statusElId).innerHTML = "<span class='text-green-600 font-bold'>✅ Posted!</span>";
-          setTimeout(() => document.getElementById(statusElId).innerHTML = "", 3000);
-        }
-        triggerPoll();
-      } catch (e) {
-        if(statusElId) document.getElementById(statusElId).innerHTML = `<span class='text-red-600'>Error: ${e.message}</span>`;
-        else alert("Failed to send: " + e.message);
-      }
+      const url = `${HOST}/${targetRoom}/say/did-${currentDid.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify({ payload, signature: sig, did: currentDid }))}`;
+      await fetch(url);
+      triggerPoll();
     }
 
-    // --- MAIN BAZAAR ACTIONS ---
+    // --- BAZAAR ACTIONS ---
     document.getElementById('post-btn').onclick = () => {
       const need = document.getElementById('task-need').value;
       const offer = document.getElementById('task-offer').value;
-      if(!need || !offer) return alert("Fill out Need and Offer.");
-      
-      const payload = {
-        type: "TASK_OFFER", task_id: "task-" + Date.now(),
-        need, offer, nonce: Date.now(), author: currentDid
-      };
-
-      broadcast('bazaar', payload, 'post-status').then(() => {
-        document.getElementById('task-need').value = "";
-        document.getElementById('task-offer').value = "";
-      });
+      broadcast('bazaar', { type: "TASK_OFFER", task_id: "task-" + Date.now(), need, offer, author: currentDid });
     };
 
     document.getElementById('live-stream').addEventListener('click', (e) => {
       if (e.target.tagName === 'BUTTON' && e.target.dataset.task) {
-        openSubroom(e.target.dataset.task, e.target.dataset.need, e.target.dataset.offer, e.target.dataset.author);
+        activeRoom = e.target.dataset.task; activeTaskId = e.target.dataset.task; activeTaskAuthorDid = e.target.dataset.authordid;
+        document.getElementById('view-main').classList.add('hidden');
+        document.getElementById('view-subroom').classList.remove('hidden');
+        document.getElementById('subroom-title').innerText = "Room: " + activeRoom;
+        document.getElementById('subroom-task-details').innerHTML = `<span class="text-gray-400">Offerer:</span> <span class="text-blue-300 font-mono">${e.target.dataset.authorname}</span><br/><span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${e.target.dataset.need}</span><br/><span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${e.target.dataset.offer}</span>`;
+        triggerPoll();
       }
     });
 
     document.getElementById('back-btn').onclick = () => {
       document.getElementById('view-subroom').classList.add('hidden');
       document.getElementById('view-main').classList.remove('hidden');
-      activeRoom = 'bazaar';
-      activeTaskId = null;
+      activeRoom = 'bazaar'; activeTaskId = null;
       triggerPoll();
     };
 
     document.getElementById('chat-send-btn').onclick = () => {
       const msg = document.getElementById('chat-input').value;
       if(!msg) return;
-      const payload = {
-        type: "CHAT_MESSAGE", task_id: activeTaskId,
-        message: msg, nonce: Date.now(), author: currentDid
-      };
-      broadcast(activeTaskId, payload, null).then(() => {
-        document.getElementById('chat-input').value = "";
-      });
+      broadcast(activeTaskId, { type: "CHAT", message: msg, author: currentDid }).then(() => document.getElementById('chat-input').value = "");
     };
 
-    function openSubroom(taskId, need, offer, author) {
-      activeRoom = taskId;
-      activeTaskId = taskId;
-      document.getElementById('view-main').classList.add('hidden');
-      document.getElementById('view-subroom').classList.remove('hidden');
-      document.getElementById('subroom-title').innerText = "Room: " + taskId;
-      
-      document.getElementById('subroom-task-details').innerHTML = `
-        <span class="text-gray-400">Offerer:</span> <span class="text-blue-300 font-mono">${author}</span><br/>
-        <span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${need}</span><br/>
-        <span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${offer}</span>
-      `;
-      document.getElementById('chat-stream').innerHTML = "Connecting to subroom...";
-      triggerPoll();
+    // --- ESCROW STATE MACHINE ACTIONS ---
+    window.fundEscrow = function() { broadcast(activeTaskId, { type: "ESCROW_FUNDED", author: currentDid }); }
+    window.submitTask = function() {
+      const link = prompt("Provide link to completed task:");
+      if(link) broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, author: currentDid });
+    }
+    window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); }
+    window.releaseEscrow = function() { 
+      broadcast(activeTaskId, { type: "ESCROW_RELEASED", author: currentDid }).then(() => {
+        // Broadcast Receipt to global bazaar to update reputation scores
+        broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
+      });
+    }
+    window.openDispute = function() {
+      if(confirm("Reject work and open dispute? Bystanders will vote.")) {
+         broadcast(activeTaskId, { type: "DISPUTE_OPEN", author: currentDid });
+      }
+    }
+    window.castVote = function(verdict) {
+      if ((globalReputation[currentDid] || 0) < 1) return alert("You need a Reputation Score >= 1 to act as a juror.");
+      broadcast(activeTaskId, { type: "VOTE", verdict: verdict, author: currentDid });
     }
 
-    document.getElementById('search-input').addEventListener('input', (e) => {
-      const term = e.target.value.toLowerCase();
-      document.querySelectorAll('.task-card').forEach(card => {
-        card.style.display = card.innerText.toLowerCase().includes(term) ? 'block' : 'none';
-      });
-    });
+    // --- POLLING & REPUTATION LOGIC ---
+    function updateMyReputationDisplay() {
+      if(currentDid) document.getElementById('display-reputation').innerText = globalReputation[currentDid] || 0;
+    }
 
-    // --- POLLING LOGIC ---
     async function triggerPoll() {
       if(pollTimer) clearTimeout(pollTimer);
       await fetchRoomData();
@@ -366,84 +284,151 @@
     }
 
     async function fetchRoomData() {
-      const containerId = activeRoom === 'bazaar' ? 'live-stream' : 'chat-stream';
-      const streamDiv = document.getElementById(containerId);
-      const searchTerm = document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase() : "";
-      
+      const streamDiv = document.getElementById(activeRoom === 'bazaar' ? 'live-stream' : 'chat-stream');
       try {
         const res = await fetch(`${HOST}/${activeRoom}`);
-        const text = await res.text();
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '' && !l.startsWith('#'));
+        const lines = (await res.text()).split('\n').map(l => l.trim()).filter(l => l !== '' && !l.startsWith('#'));
         
-        if (lines.length === 0) {
-          streamDiv.innerHTML = activeRoom === 'bazaar' 
-            ? "<span class='text-gray-400'>No tasks found. Be the first!</span>"
-            : "<span class='text-gray-400 text-center block mt-10'>No negotiation history yet. Say hello!</span>";
-          return;
+        if (activeRoom === 'bazaar') {
+          // Pass 1: Build Reputation Engine statelessly from Receipts
+          let repMap = {};
+          lines.forEach(l => {
+             const start = l.indexOf('{');
+             if(start > -1) {
+               try {
+                 const p = JSON.parse(l.substring(start));
+                 if(p.payload && p.payload.type === 'RECEIPT') {
+                    if(!repMap[p.payload.offerer]) repMap[p.payload.offerer] = new Set();
+                    if(!repMap[p.payload.worker]) repMap[p.payload.worker] = new Set();
+                    repMap[p.payload.offerer].add(p.payload.worker);
+                    repMap[p.payload.worker].add(p.payload.offerer);
+                 }
+               } catch(e){}
+             }
+          });
+          Object.keys(repMap).forEach(k => globalReputation[k] = repMap[k].size);
+          updateMyReputationDisplay();
         }
 
         streamDiv.innerHTML = "";
-        let hasData = false;
+        if (lines.length === 0) return;
+
+        // Subroom State Tracking Variables
+        let state = "AWAITING_FUNDS";
+        let voteRelease = new Set();
+        let voteBurn = new Set();
+        activeWorkerDid = null;
 
         lines.reverse().forEach(line => {
           try {
             const jStart = line.indexOf('{');
             if (jStart === -1) return; 
-            
             const p = JSON.parse(line.substring(jStart));
             if (!p.payload || !p.payload.type) return;
             
-            hasData = true;
             const isMe = currentDid && p.did === currentDid;
             const nameDisp = p.payload.name || `...${p.did.slice(-6)}`;
+            const score = globalReputation[p.did] || 0;
             const el = document.createElement('div');
 
+            // --- BAZAAR FEED RENDER ---
             if (activeRoom === 'bazaar' && p.payload.type === 'TASK_OFFER') {
-              el.className = "task-card border border-gray-700 bg-gray-800 p-4 rounded mb-3 break-words";
-              el.style.display = JSON.stringify(p.payload).toLowerCase().includes(searchTerm) ? 'block' : 'none';
+              el.className = "border border-gray-700 bg-gray-800 p-4 rounded mb-3 break-words";
               el.innerHTML = `
                 <div class="flex justify-between items-start border-b border-gray-700 pb-2 mb-2">
-                  <span class="text-blue-400 font-bold">${nameDisp} ${isMe ? '(YOU)' : ''}</span>
-                  <span class="text-xs text-gray-500 font-mono">${p.did.slice(0,16)}...</span>
+                  <span class="text-blue-400 font-bold">${nameDisp} ${isMe ? '(YOU)' : ''} <span class="text-green-400 text-xs ml-2">★ Score: ${score}</span></span>
                 </div>
                 <div class="text-sm">
-                  <span class="text-green-400 font-bold">NEED:</span> <span class="text-white">${p.payload.need}</span><br/>
-                  <span class="text-yellow-400 font-bold">OFFER:</span> <span class="text-white">${p.payload.offer}</span>
+                  <span class="text-white font-bold">NEED:</span> <span class="text-gray-300">${p.payload.need}</span><br/>
+                  <span class="text-white font-bold">OFFER:</span> <span class="text-gray-300">${p.payload.offer}</span>
                 </div>
-                <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-author="${nameDisp}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded font-bold shadow transition-colors">
-                  Open Subroom
-                </button>
+                <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-authorname="${nameDisp}" data-authordid="${p.payload.author}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded font-bold shadow">Negotiate</button>
               `;
               streamDiv.appendChild(el);
             } 
+            // --- SUBROOM RENDER ---
             else if (activeRoom !== 'bazaar') {
-              el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
-              el.innerHTML = `
-                <span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp}</span>
-                <div class="px-4 py-2 rounded-lg max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'}">
-                  ${p.payload.message || JSON.stringify(p.payload)}
-                </div>
-              `;
+              if (p.payload.type === 'ESCROW_FUNDED') state = "FUNDED";
+              if (p.payload.type === 'TASK_SUBMITTED') { state = "SUBMITTED"; activeWorkerDid = p.did; }
+              if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; // Kicked back
+              if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
+              if (p.payload.type === 'ESCROW_RELEASED') state = "RELEASED";
+              if (p.payload.type === 'ESCROW_BURNED') state = "BURNED";
+              
+              if (p.payload.type === 'VOTE' && state === "DISPUTE" && score >= 1) {
+                 if(p.payload.verdict === 'RELEASE') voteRelease.add(p.did);
+                 if(p.payload.verdict === 'BURN') voteBurn.add(p.did);
+                 
+                 // Stateless Resolution trigger (Local calculation)
+                 if(voteRelease.size >= 2) state = "RELEASED";
+                 if(voteBurn.size >= 2) state = "BURNED";
+              }
+
+              // Visual Rendering of Chat
+              if (['ESCROW_FUNDED', 'TASK_SUBMITTED', 'TASK_REVISION', 'DISPUTE_OPEN', 'ESCROW_RELEASED', 'ESCROW_BURNED', 'VOTE'].includes(p.payload.type)) {
+                 el.className = `flex justify-center mb-4`;
+                 let sysMsg = `System: ${p.payload.type}`;
+                 if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
+                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg += ` - Link: ${p.payload.data}`;
+                 el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-400 text-xs text-center w-full">${sysMsg}</div>`;
+              } else if (p.payload.type === 'CHAT') {
+                 el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
+                 el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-lg max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'}">${p.payload.message}</div>`;
+              }
               streamDiv.insertBefore(el, streamDiv.firstChild);
             }
           } catch(e) { } 
         });
 
-        if (!hasData) streamDiv.innerHTML = `<span class="text-gray-500 text-sm">No formatted data found.</span>`;
-        if (activeRoom !== 'bazaar') streamDiv.scrollTop = streamDiv.scrollHeight;
-      } catch (err) {
-        // GRACEFUL ERROR HANDLING IS RIGHT HERE
-        if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Fetching")) {
-          streamDiv.innerHTML = `<span class="text-red-500">Network hiccup: ${err.message}. Retrying...</span>`;
-        } else {
-          console.warn("Transient polling error suppressed:", err.message);
+        if (activeRoom !== 'bazaar') {
+           streamDiv.scrollTop = streamDiv.scrollHeight;
+           renderEscrowState(state, voteRelease.size, voteBurn.size);
         }
+
+      } catch (err) {
+        if (streamDiv.children.length === 0) streamDiv.innerHTML = `<span class="text-red-500">Error: ${err.message}</span>`;
       }
     }
 
-    if(document.getElementById('search-input')) document.getElementById('search-input').addEventListener('input', triggerPoll);
-    
-    // Start guest view
+    // Dynamic State Machine UI rendering
+    function renderEscrowState(state, relVotes, burnVotes) {
+       const statusText = document.getElementById('escrow-status-text');
+       const actionContainer = document.getElementById('escrow-action-container');
+       const disputePanel = document.getElementById('dispute-panel');
+       actionContainer.innerHTML = ""; disputePanel.classList.add('hidden');
+       
+       const isOfferer = (currentDid === activeTaskAuthorDid);
+       const isLoggedIn = !!currentDid;
+
+       if (state === "AWAITING_FUNDS") {
+          statusText.innerHTML = "Escrow: Awaiting Funds"; statusText.className = "text-sm font-bold text-yellow-400";
+          if (isOfferer && isLoggedIn) actionContainer.innerHTML = `<button onclick="fundEscrow()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 text-xs rounded font-bold">Fund Escrow</button>`;
+       } 
+       else if (state === "FUNDED") {
+          statusText.innerHTML = "Escrow: Funded (Working Phase)"; statusText.className = "text-sm font-bold text-blue-400";
+          if (!isOfferer && isLoggedIn) actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task</button>`;
+       }
+       else if (state === "SUBMITTED") {
+          statusText.innerHTML = "Escrow: Review Phase"; statusText.className = "text-sm font-bold text-purple-400";
+          if (isOfferer && isLoggedIn) actionContainer.innerHTML = `
+            <button onclick="requestRevision()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 text-xs rounded font-bold">Request Revision</button>
+            <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs rounded font-bold">Reject</button>
+            <button onclick="releaseEscrow()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 text-xs rounded font-bold">Approve</button>
+          `;
+       }
+       else if (state === "DISPUTE") {
+          statusText.innerHTML = "Escrow: DISPUTE ACTIVE"; statusText.className = "text-sm font-bold text-red-500";
+          disputePanel.classList.remove('hidden');
+          document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
+       }
+       else if (state === "RELEASED") {
+          statusText.innerHTML = "Escrow: Complete (Funds Released)"; statusText.className = "text-sm font-bold text-green-400";
+       }
+       else if (state === "BURNED") {
+          statusText.innerHTML = "Escrow: Terminated (Funds Burned)"; statusText.className = "text-sm font-bold text-gray-500";
+       }
+    }
+
     triggerPoll();
   </script>
 </body>
