@@ -273,7 +273,7 @@
       
       try {
         // UPGRADE: Use the correct Technocore API endpoint for signed messages
-        const postUrl = `${ROOM_URL}/say-signed/${payload.nonce}/${currentDid}/${encodeURIComponent(sigBase64)}/${encodeURIComponent(msgStr)}`;
+        const postUrl = `${ROOM_URL}/say-signed/${currentDid}/${encodeURIComponent(sigBase64)}/${payload.nonce}/${encodeURIComponent(msgStr)}`;
         
         const response = await fetch(postUrl);
         
