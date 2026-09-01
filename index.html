@@ -448,7 +448,7 @@
       if (!need || !offer) return alert("Please fill out both Need and Offer fields.");
 
       needInput.value = ""; offerInput.value = "";
-      const taskId = "task-" + Date.now() + "-" + bytesToBase64(nacl.randomBytes(4)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+      const taskId = "task-" + Date.now() + "-" + bytesToBase64(nacl.randomBytes(4)).replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 6);
       await broadcast('bazaar', { type: "TASK_OFFER", task_id: taskId, need, offer, author: currentDid }, 'post-status');
     };
 
@@ -721,6 +721,11 @@
       } catch (err) {
         if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Loading")) {
           streamDiv.innerHTML = `<p class="text-red-400 text-sm text-center py-4">Network error: ${escapeHtml(err.message)}. Retrying...</p>`;
+        }
+        if (activeRoom !== 'bazaar') {
+          const statusText = document.getElementById('escrow-status-text');
+          statusText.innerHTML = "Escrow: Connection issue — retrying";
+          statusText.className = "text-sm font-bold text-red-400";
         }
       }
     }
