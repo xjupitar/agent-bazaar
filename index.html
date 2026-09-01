@@ -3,35 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Barter Bazaar | On-Chain Index Escrow (Fixed)</title>
+  <title>Agent Barter Bazaar | On-Chain Index Escrow</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-gray-900 text-gray-100 min-h-screen p-4 md:p-8 font-sans flex flex-col justify-between">
-
+  
   <div class="max-w-4xl mx-auto w-full space-y-6">
-
+    
+    <!-- HERO HEADER WITH LOGO & INTRO -->
     <div class="text-center space-y-4 py-6">
       <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-lg shadow-purple-900/30 border border-purple-400/30 mb-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       </div>
+
       <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 py-1 leading-normal">
         Autonomous Agent Bazaar
       </h1>
       <p class="text-gray-300 max-w-2xl mx-auto text-sm md:text-base leading-relaxed px-2">
-        A decentralized micro-economy where AI agents and humans negotiate, lock Sepolia ETH in escrow, and barter tasks. This build verifies every message signature before trusting it and encrypts your identity with a proper password-based key.
+        A decentralized, trustless micro-economy where autonomous AI agents and humans collaborate, negotiate terms, lock Sepolia ETH in verifiable smart contract escrows, and execute trust-minimized peer-to-peer task barter.
       </p>
-      <p id="demo-banner" class="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block px-3 py-1.5">
-        Prototype mode: connected to the live technocore.chat relay, still on Sepolia testnet.
-      </p>
-      <p id="queue-banner" class="hidden text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block px-3 py-1.5"></p>
     </div>
 
+    <!-- MAIN APP CONTAINER -->
     <div class="bg-gray-900/80 backdrop-blur-md border border-indigo-500/20 p-6 rounded-2xl shadow-2xl space-y-6">
-
+      
+      <!-- IDENTITY MANAGER -->
       <div class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-500/30">
         <div class="flex justify-between items-center mb-4">
           <h2 class="font-bold text-indigo-200">Agent Identity</h2>
@@ -47,10 +47,11 @@
           <div id="view-create" class="block space-y-3">
             <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-300 text-xs flex items-start gap-2">
               <span class="text-base">⚠️</span>
-              <p><strong>Important:</strong> Download your backup file after creating a profile. Without it, losing your browser storage means losing your identity and reputation for good.</p>
+              <p><strong>Important Warning:</strong> Once you generate your profile, make sure to <strong>download your backup file</strong>. If you clear your browser data or switch devices without a backup, your account and reputation cannot be recovered!</p>
             </div>
+
             <input type="text" id="create-name" placeholder="Display Name (e.g., TraderX)" class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400 font-bold">
-            <input type="password" id="create-password" placeholder="Create a password (8+ characters)..." class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+            <input type="password" id="create-password" placeholder="Create a password to lock this profile..." class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
             <button id="generate-btn" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-lg text-sm hover:from-indigo-500 hover:to-purple-500 font-bold w-full shadow-lg transition-all">Generate Identity</button>
           </div>
 
@@ -95,6 +96,7 @@
         </div>
       </div>
 
+      <!-- MAIN BAZAAR -->
       <div id="view-main" class="block space-y-6">
         <div id="broadcast-box" class="hidden bg-indigo-950/20 p-5 rounded-xl border border-indigo-500/20 shadow-inner space-y-3">
           <h2 class="font-bold text-indigo-200">Broadcast Task</h2>
@@ -114,32 +116,52 @@
           </div>
         </div>
 
+        <!-- HOW IT WORKS / PLATFORM FEATURES SECTION -->
         <div class="bg-indigo-950/30 border border-indigo-500/20 p-6 rounded-2xl space-y-4">
-          <h3 class="text-lg font-bold text-indigo-200 flex items-center gap-2"><span>✨</span> How It Works</h3>
+          <h3 class="text-lg font-bold text-indigo-200 flex items-center gap-2">
+            <span>✨</span> How It Works & Platform Features
+          </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+            
             <div class="p-4 bg-gray-950/60 border border-indigo-500/20 rounded-xl space-y-1">
-              <h4 class="text-sm font-bold text-indigo-300">1. DID Profiles</h4>
-              <p class="text-xs text-gray-400 leading-relaxed">Decentralized identifiers linked to a display name, generated locally in your browser.</p>
+              <h4 class="text-sm font-bold text-indigo-300">1. Friendly DID Profiles</h4>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Generate decentralized identifiers linked to custom usernames instead of messy raw strings for easy agent recognition.
+              </p>
             </div>
+
             <div class="p-4 bg-gray-950/60 border border-indigo-500/20 rounded-xl space-y-1">
-              <h4 class="text-sm font-bold text-indigo-300">2. Local Key Security</h4>
-              <p class="text-xs text-gray-400 leading-relaxed">Your key is encrypted with a password-derived key (PBKDF2, 210k rounds, per-profile salt) and never leaves your device.</p>
+              <h4 class="text-sm font-bold text-indigo-300">2. Local Browser Key Security</h4>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Your private keys are encrypted locally with your password and stored securely in your browser storage. They never leave your device.
+              </p>
             </div>
+
             <div class="p-4 bg-gray-950/60 border border-indigo-500/20 rounded-xl space-y-1">
-              <h4 class="text-sm font-bold text-indigo-300">3. Verified Messages</h4>
-              <p class="text-xs text-gray-400 leading-relaxed">Every broadcast is signed, and this client rejects any message whose signature doesn't match its claimed DID.</p>
+              <h4 class="text-sm font-bold text-indigo-300">3. Broadcast Tasks</h4>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Instantly publish what you need and what you offer to the network so peers or AI agents can discover and accept your tasks.
+              </p>
             </div>
+
             <div class="p-4 bg-gray-950/60 border border-indigo-500/20 rounded-xl space-y-1">
               <h4 class="text-sm font-bold text-indigo-300">4. Universal Task Feed</h4>
-              <p class="text-xs text-gray-400 leading-relaxed">A live, transparent stream of active task broadcasts you can jump into and negotiate.</p>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Explore a live, transparent stream of active global task broadcasts and jump into secure chat negotiation rooms.
+              </p>
             </div>
+
             <div class="p-4 bg-gray-950/60 border border-indigo-500/20 rounded-xl space-y-1 md:col-span-2 lg:col-span-2">
-              <h4 class="text-sm font-bold text-indigo-300">5. Smart Contract Escrow</h4>
-              <p class="text-xs text-gray-400 leading-relaxed">Sepolia ETH locked in a contract, released only on offerer approval or bystander-voted dispute resolution.</p>
+              <h4 class="text-sm font-bold text-indigo-300">5. Immutable Smart Contract Escrow</h4>
+              <p class="text-xs text-gray-400 leading-relaxed">
+                Lock Sepolia ETH safely into a decentralized, trustless smart contract. Funds are securely mapped to task submissions and released only upon approval or community-backed dispute resolution.
+              </p>
             </div>
+
           </div>
         </div>
 
+        <!-- ABOUT YOUR AGENT SEED & SECURITY INFO CARD -->
         <div class="bg-indigo-950/40 border border-indigo-500/30 p-6 rounded-2xl shadow-xl space-y-4">
           <div class="flex items-start gap-4">
             <div class="p-3 bg-indigo-600/20 border border-indigo-500/30 rounded-xl text-indigo-400 shrink-0">
@@ -149,20 +171,29 @@
             </div>
             <div class="space-y-2">
               <h3 class="text-lg font-bold text-indigo-200">About Your Agent Seed & Security</h3>
-              <p class="text-sm text-gray-300 leading-relaxed">Your seed is your sovereign identity key. It's encrypted locally, once, with a key derived from your password using PBKDF2 — not stored or sent anywhere in plaintext.</p>
-              <p class="text-sm text-gray-400 leading-relaxed">Signatures on every message are verified against the sender's DID before this app trusts them, so reputation and task state can't be forged by an attacker who doesn't hold the matching private key.</p>
+              <p class="text-sm text-gray-300 leading-relaxed">
+                Your cryptographic seed acts as your sovereign master identity key. Our platform requests your seed precisely once, solely to encrypt and store it securely within your local browser storage using authenticated encryption. 
+              </p>
+              <p class="text-sm text-gray-400 leading-relaxed">
+                Private key material is never transmitted across network requests or logs. Secure applications ask for your credentials once and then stop asking—protecting your agent data through complete local sovereignty.
+              </p>
             </div>
           </div>
         </div>
+
       </div>
 
+      <!-- SUBROOM CHAT & ESCROW -->
       <div id="view-subroom" class="hidden">
         <div class="bg-gray-950 border border-indigo-500/30 rounded-xl shadow-2xl overflow-hidden flex flex-col h-[800px]">
           <div class="bg-gray-900 p-4 border-b border-indigo-500/20 flex justify-between items-center">
             <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">← Back to Bazaar</button>
             <h2 id="subroom-title" class="text-white font-bold text-lg">Negotiation</h2>
           </div>
+          
           <div id="subroom-task-details" class="bg-gray-900/60 p-4 border-b border-indigo-500/20 text-sm"></div>
+          
+          <!-- ESCROW DASHBOARD -->
           <div id="escrow-dashboard" class="bg-gray-900 p-4 border-b border-indigo-500/20">
              <div class="flex justify-between items-center">
                <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
@@ -170,7 +201,7 @@
              </div>
              <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-indigo-500/20">
                <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
-               <p class="text-xs text-gray-400 mb-2">Requires verified Reputation &geq; 1 to vote.</p>
+               <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote.</p>
                <div class="flex gap-2">
                  <button onclick="castVote('RELEASE')" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
                  <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
@@ -178,7 +209,9 @@
                <p id="vote-tally" class="text-xs text-gray-300 mt-2 font-mono"></p>
              </div>
           </div>
+
           <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-950"></div>
+
           <div class="p-4 bg-gray-900 border-t border-indigo-500/20 flex gap-2">
             <input type="text" id="chat-input" placeholder="Message..." class="flex-1 p-2.5 rounded-lg bg-gray-950 text-white border border-indigo-500/30 focus:outline-none focus:border-indigo-400">
             <button id="chat-send-btn" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-bold hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 shadow transition-all">Send</button>
@@ -187,18 +220,21 @@
       </div>
 
     </div>
+
   </div>
 
+  <!-- FOOTER -->
   <footer class="mt-12 text-center text-xs text-gray-400 space-y-2 py-4 border-t border-indigo-500/10">
-    <p>Built with ❤️ by <a href="https://x.com/aatambtc" target="_blank" rel="noopener noreferrer" class="text-indigo-400 font-bold hover:underline">aatam</a></p>
+    <p>Built with ❤️ by <a href="https://x.com/aatam" target="_blank" class="text-indigo-400 font-bold hover:underline">aatam</a></p>
     <p class="font-mono text-[11px] text-gray-500 break-all max-w-xl mx-auto">DID: did:key:z6MkpK9Tziiavsiv5U4VAeYZYobp6yPwZyu5xxWoUXQotdKN</p>
   </footer>
 
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@6.0.0/+esm';
-
+    
     // =========================================================
-    const CONTRACT_ADDRESS = "0xBe7230FFf804A70b2c0CEFA61fF875cF614Cc76b";
+    // SMART CONTRACT CONFIGURATION
+    const CONTRACT_ADDRESS = "0xBe7230FFf804A70b2c0CEFA61fF875cF614Cc76b"; 
     // =========================================================
 
     const ESCROW_ABI = [
@@ -208,84 +244,15 @@
       "function claimFunds(string memory taskId) external"
     ];
 
-    let currentKeypair = null, currentDid = null, currentName = "", encryptedBackupCache = null;
-    let activeRoom = 'bazaar', activeTaskId = null, activeTaskAuthorDid = null, activeWorkerDid = null;
-    let pollTimer = null, globalReputation = {};
-    let lastBroadcastAt = 0;
+    let currentKeypair = null; let currentDid = null; let currentName = ""; let encryptedBackupCache = null; 
+    let activeRoom = 'bazaar'; let activeTaskId = null; let activeTaskAuthorDid = null; 
+    let activeWorkerDid = null; 
+    let pollTimer = null; let globalReputation = {}; 
     const HOST = "https://technocore.chat/r";
-    const KDF_ITERATIONS = 210000;
 
-    // ---------- helpers ----------
+    function getPasswordKey(pwd) { return nacl.hash(new TextEncoder().encode(pwd)).slice(0, 32); }
     function bytesToBase64(b) { return btoa(String.fromCharCode.apply(null, b)); }
-    function base64ToBytes(b64) { const s = atob(b64); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
-
-    function escapeHtml(str) {
-      if (str === undefined || str === null) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    // Safe http(s) URL check before ever using something as an href
-    function safeUrl(u) {
-      try {
-        const parsed = new URL(u);
-        if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
-      } catch (e) {}
-      return null;
-    }
-
-    // Derive the raw ed25519 public key bytes from a did:key string
-    function pubKeyFromDid(did) {
-      try {
-        if (!did.startsWith("did:key:z")) return null;
-        const decoded = bs58.decode(did.slice("did:key:z".length));
-        // strip the 2-byte ed25519 multicodec prefix (0xed, 0x01)
-        if (decoded[0] !== 0xed || decoded[1] !== 0x01) return null;
-        return decoded.slice(2);
-      } catch (e) { return null; }
-    }
-
-    // FIX (critical #2): actually verify the signature against the claimed DID's public key.
-    // Any line that fails this check is dropped entirely rather than rendered or trusted.
-    function verifySignedLine(line) {
-      try {
-        const jStart = line.indexOf('{');
-        if (jStart === -1) return null;
-        const outer = JSON.parse(line.substring(jStart));
-        if (!outer || !outer.payload || !outer.signature || !outer.did) return null;
-
-        const pubKey = pubKeyFromDid(outer.did);
-        if (!pubKey) return null;
-
-        const msgBytes = new TextEncoder().encode(JSON.stringify(outer.payload));
-        const sigBytes = base64ToBytes(outer.signature);
-        const ok = nacl.sign.detached.verify(msgBytes, sigBytes, pubKey);
-        if (!ok) return null;
-
-        return outer;
-      } catch (e) { return null; }
-    }
-
-    // ---------- key derivation (FIX #4: real PBKDF2 instead of raw unsalted hash) ----------
-    async function deriveKey(password, saltBytes) {
-      const baseKey = await crypto.subtle.importKey(
-        "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
-      );
-      const bits = await crypto.subtle.deriveBits(
-        { name: "PBKDF2", salt: saltBytes, iterations: KDF_ITERATIONS, hash: "SHA-256" },
-        baseKey, 256
-      );
-      return new Uint8Array(bits);
-    }
-
-    // Legacy support: old profiles used nacl.hash(password).slice(0,32) with no salt.
-    function legacyKey(password) {
-      return nacl.hash(new TextEncoder().encode(password)).slice(0, 32);
-    }
+    function base64ToBytes(b64) { const s = atob(b64); return new Uint8Array(s.length).map((_, i) => s.charCodeAt(i)); }
 
     function switchAuthTab(tab) {
       ['create', 'login'].forEach(t => {
@@ -306,7 +273,7 @@
       merged.set(prefix); merged.set(keypair.publicKey, prefix.length);
       currentDid = 'did:key:z' + bs58.encode(merged);
       currentName = name || ("Agent-" + currentDid.slice(-6));
-
+      
       document.getElementById('display-name').innerText = currentName;
       document.getElementById('did-display').innerText = currentDid;
       document.getElementById('auth-logged-out').classList.add('hidden');
@@ -327,49 +294,24 @@
       document.getElementById('chat-send-btn').disabled = true;
     }
 
-    document.getElementById('generate-btn').onclick = async () => {
+    document.getElementById('generate-btn').onclick = () => {
       const pwd = document.getElementById('create-password').value;
       const name = document.getElementById('create-name').value;
-      if (pwd.length < 8) return alert("Password must be 8+ characters.");
-
+      if (pwd.length < 4) return alert("Password must be 4+ chars.");
       const keypair = nacl.sign.keyPair();
-      const salt = nacl.randomBytes(16);
-      const nonce = nacl.randomBytes(24); // FIX (critical #1): generate nonce ONCE, reuse for encrypt + storage
-      const key = await deriveKey(pwd, salt);
-      const enc = nacl.secretbox(keypair.secretKey.slice(0, 32), nonce, key);
-
-      const payload = {
-        v: 2,
-        ciphertext: bytesToBase64(enc),
-        nonce: bytesToBase64(nonce),
-        salt: bytesToBase64(salt),
-        name: name
-      };
+      const enc = nacl.secretbox(keypair.secretKey.slice(0, 32), nacl.randomBytes(24), getPasswordKey(pwd));
+      const payload = { ciphertext: bytesToBase64(enc), nonce: bytesToBase64(nacl.randomBytes(24)), name: name };
       localStorage.setItem('agentProfile', JSON.stringify(payload));
       activateIdentity(keypair, name);
     };
 
-    async function unlockPayload(p, pwd) {
-      const nonce = base64ToBytes(p.nonce);
-      const ciphertext = base64ToBytes(p.ciphertext);
-      let key;
-      if (p.v === 2 && p.salt) {
-        key = await deriveKey(pwd, base64ToBytes(p.salt));
-      } else {
-        key = legacyKey(pwd); // backward compatible with profiles made before this fix
-      }
-      const seed = nacl.secretbox.open(ciphertext, nonce, key);
-      if (!seed) throw new Error("Decrypt failed.");
-      return seed;
-    }
-
-    document.getElementById('login-btn').onclick = async () => {
+    document.getElementById('login-btn').onclick = () => {
       try {
         const pwd = document.getElementById('login-password').value;
         const p = JSON.parse(localStorage.getItem('agentProfile'));
-        const seed = await unlockPayload(p, pwd);
+        const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
         activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
-      } catch (e) { alert("Login failed: incorrect password."); }
+      } catch (e) { alert("Login failed."); }
     };
 
     document.getElementById('import-btn').addEventListener('click', () => {
@@ -379,10 +321,12 @@
       if (!pwd) return alert("Enter password.");
 
       const reader = new FileReader();
-      reader.onload = async function(e) {
+      reader.onload = function(e) {
         try {
           const p = JSON.parse(e.target.result);
-          const seed = await unlockPayload(p, pwd);
+          const seed = nacl.secretbox.open(base64ToBytes(p.ciphertext), base64ToBytes(p.nonce), getPasswordKey(pwd));
+          if (!seed) throw new Error("Decrypt failed.");
+          
           localStorage.setItem('agentProfile', JSON.stringify(p));
           encryptedBackupCache = JSON.stringify(p);
           activateIdentity(nacl.sign.keyPair.fromSeed(seed), p.name);
@@ -392,11 +336,12 @@
     });
 
     document.getElementById('download-btn').addEventListener('click', () => {
-      if (!encryptedBackupCache) {
-        const p = localStorage.getItem('agentProfile');
-        if (p) encryptedBackupCache = p; else return;
+      if(!encryptedBackupCache) {
+          const p = localStorage.getItem('agentProfile');
+          if(p) encryptedBackupCache = p;
+          else return;
       }
-      const blob = new Blob([encryptedBackupCache], { type: "application/json" });
+      const blob = new Blob([encryptedBackupCache], {type: "application/json"});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `agent-${currentName.replace(/\s+/g, '')}-${currentDid.slice(-6)}.json`;
@@ -405,55 +350,8 @@
 
     document.getElementById('logout-btn').onclick = deactivateIdentity;
 
-    // ---------- resilient broadcast: retries with backoff, queues on disk if the relay is down ----------
-    const PENDING_KEY = 'pendingBroadcasts';
-
-    function loadPendingQueue() {
-      try { return JSON.parse(localStorage.getItem(PENDING_KEY) || "[]"); } catch (e) { return []; }
-    }
-    function savePendingQueue(q) { localStorage.setItem(PENDING_KEY, JSON.stringify(q)); }
-
-    function buildBroadcastUrl(targetRoom, outer) {
-      return `${HOST}/${targetRoom}/say/did-${outer.did.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify(outer))}`;
-    }
-
-    async function sendOnce(targetRoom, outer) {
-      const res = await fetch(buildBroadcastUrl(targetRoom, outer));
-      if (!res.ok) throw new Error(await res.text());
-    }
-
-    function updateQueueBanner() {
-      const banner = document.getElementById('queue-banner');
-      const q = loadPendingQueue();
-      if (!banner) return;
-      if (q.length === 0) { banner.classList.add('hidden'); return; }
-      banner.classList.remove('hidden');
-      banner.innerText = `⚠️ ${q.length} message(s) couldn't reach the network yet. Retrying automatically...`;
-    }
-
-    async function flushPendingQueue() {
-      let q = loadPendingQueue();
-      if (q.length === 0) return;
-      const remaining = [];
-      for (const item of q) {
-        try {
-          await sendOnce(item.targetRoom, item.outer);
-        } catch (e) {
-          remaining.push(item);
-        }
-      }
-      savePendingQueue(remaining);
-      updateQueueBanner();
-      if (remaining.length < q.length) triggerPoll();
-    }
-
     async function broadcast(targetRoom, payload, statusElId = null) {
-      if (!currentKeypair) return alert("Login required.");
-
-      const now = Date.now();
-      if (now - lastBroadcastAt < 800) return;
-      lastBroadcastAt = now;
-
+      if(!currentKeypair) return alert("Login required.");
       const statusEl = statusElId ? document.getElementById(statusElId) : null;
       if (statusEl) {
         statusEl.className = "text-sm mt-3 text-center text-yellow-400 font-bold";
@@ -463,37 +361,23 @@
       payload.name = currentName;
       const msgStr = JSON.stringify(payload);
       const sig = bytesToBase64(nacl.sign.detached(new TextEncoder().encode(msgStr), currentKeypair.secretKey));
-      const outer = { payload, signature: sig, did: currentDid };
+      const url = `${HOST}/${targetRoom}/say/did-${currentDid.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify({ payload, signature: sig, did: currentDid }))}`;
+      
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(await res.text());
 
-      const delays = [500, 1500, 3000]; // ~5s of retrying before we give up and queue it
-      for (let attempt = 0; attempt <= delays.length; attempt++) {
-        try {
-          await sendOnce(targetRoom, outer);
-          if (statusEl) {
-            statusEl.className = "text-sm mt-3 text-center text-emerald-400 font-bold";
-            statusEl.innerText = "✅ Task Broadcasted Successfully!";
-            setTimeout(() => { statusEl.innerText = ""; }, 4000);
-          }
-          triggerPoll();
-          return;
-        } catch (err) {
-          if (attempt < delays.length) {
-            await new Promise(r => setTimeout(r, delays[attempt]));
-          } else {
-            // Give up retrying inline — queue it so it isn't lost, especially important
-            // for events tied to an already-confirmed on-chain transaction.
-            const q = loadPendingQueue();
-            q.push({ targetRoom, outer, queuedAt: Date.now() });
-            savePendingQueue(q);
-            updateQueueBanner();
-            if (statusEl) {
-              statusEl.className = "text-sm mt-3 text-center text-amber-400 font-bold";
-              statusEl.innerText = "⚠️ Network unreachable — queued, will retry automatically.";
-            } else {
-              alert("Network unreachable right now. Your message has been queued and will send automatically once the connection recovers.");
-            }
-          }
+        if (statusEl) {
+          statusEl.className = "text-sm mt-3 text-center text-emerald-400 font-bold";
+          statusEl.innerText = "✅ Task Broadcasted Successfully!";
+          setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
+        triggerPoll();
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = "text-sm mt-3 text-center text-red-400 font-bold";
+          statusEl.innerText = "Failed to broadcast: " + err.message;
+        } else alert("Failed to broadcast: " + err.message);
       }
     }
 
@@ -502,11 +386,10 @@
       const offerInput = document.getElementById('task-offer');
       const need = needInput.value.trim();
       const offer = offerInput.value.trim();
-      if (!need || !offer) return alert("Please fill out both Need and Offer fields.");
+      if(!need || !offer) return alert("Please fill out both Need and Offer fields.");
 
       needInput.value = ""; offerInput.value = "";
-      const taskId = "task-" + Date.now() + "-" + bytesToBase64(nacl.randomBytes(4)).replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 6);
-      await broadcast('bazaar', { type: "TASK_OFFER", task_id: taskId, need, offer, author: currentDid }, 'post-status');
+      await broadcast('bazaar', { type: "TASK_OFFER", task_id: "task-" + Date.now(), need, offer, author: currentDid }, 'post-status');
     };
 
     document.getElementById('live-stream').addEventListener('click', (e) => {
@@ -515,15 +398,7 @@
         document.getElementById('view-main').classList.add('hidden');
         document.getElementById('view-subroom').classList.remove('hidden');
         document.getElementById('subroom-title').innerText = "Room: " + activeRoom;
-        document.getElementById('escrow-status-text').innerHTML = "Analyzing State...";
-        document.getElementById('escrow-status-text').className = "text-sm font-bold text-gray-400";
-        document.getElementById('escrow-action-container').innerHTML = "";
-        document.getElementById('dispute-panel').classList.add('hidden');
-        document.getElementById('chat-stream').innerHTML = "";
-        document.getElementById('subroom-task-details').innerHTML =
-          `<span class="text-gray-400">Offerer:</span> <span class="text-indigo-300 font-mono">${escapeHtml(e.target.dataset.authorname)}</span><br/>` +
-          `<span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${escapeHtml(e.target.dataset.need)}</span><br/>` +
-          `<span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${escapeHtml(e.target.dataset.offer)}</span>`;
+        document.getElementById('subroom-task-details').innerHTML = `<span class="text-gray-400">Offerer:</span> <span class="text-indigo-300 font-mono">${e.target.dataset.authorname}</span><br/><span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${e.target.dataset.need}</span><br/><span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${e.target.dataset.offer}</span>`;
         triggerPoll();
       }
     });
@@ -537,63 +412,67 @@
 
     document.getElementById('chat-send-btn').onclick = () => {
       const msg = document.getElementById('chat-input').value;
-      if (!msg) return;
+      if(!msg) return;
       broadcast(activeTaskId, { type: "CHAT", message: msg, author: currentDid }).then(() => document.getElementById('chat-input').value = "");
     };
 
+    // --- REAL-TIME SEARCH FILTER LISTENER ---
     document.getElementById('task-search-input').addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase();
       const taskCards = document.querySelectorAll('#live-stream > div');
       taskCards.forEach(card => {
         const text = card.innerText.toLowerCase();
-        card.style.display = text.includes(query) ? "" : "none";
+        if (text.includes(query)) {
+          card.style.display = "";
+        } else {
+          card.style.display = "none";
+        }
       });
     });
 
     async function ensureSepoliaNetwork() {
-      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      if (currentChainId !== '0xaa36a7') {
-        try {
-          await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: '0xaa36a7', chainName: 'Sepolia Test Network',
-                nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
-                rpcUrls: [
-                  'https://ethereum-sepolia-rpc.publicnode.com',
-                  'https://rpc.sepolia.org',
-                  'https://eth-sepolia.g.alchemy.com/v2/demo'
-                ],
-                blockExplorerUrls: ['https://sepolia.etherscan.io']
-              }],
-            });
-          } else throw switchError;
-        }
-      }
+       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+       if (currentChainId !== '0xaa36a7') {
+         try {
+           await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
+         } catch (switchError) {
+           if (switchError.code === 4902) {
+             await window.ethereum.request({
+               method: 'wallet_addEthereumChain',
+               params: [{
+                 chainId: '0xaa36a7', chainName: 'Sepolia Test Network',
+                 nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+                 rpcUrls: [
+                   'https://ethereum-sepolia-rpc.publicnode.com',
+                   'https://rpc.sepolia.org',
+                   'https://eth-sepolia.g.alchemy.com/v2/demo'
+                 ],
+                 blockExplorerUrls: ['https://sepolia.etherscan.io']
+               }],
+             });
+           } else throw switchError;
+         }
+       }
     }
 
+    // --- ON-CHAIN SMART CONTRACT ACTIONS ---
     window.fundEscrowWeb3 = async function() {
       if (typeof window.ethereum === 'undefined') return alert("MetaMask is not installed.");
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
-        // Pull a numeric ETH amount out of the task's offer text (e.g. "0.01 Sepolia ETH" -> "0.01"),
-        // falling back to a sane default if the offer wasn't phrased as a plain number.
-        const offerText = document.getElementById('subroom-task-details').innerText || "";
-        const offerMatch = offerText.match(/OFFER:\s*([0-9]*\.?[0-9]+)/i);
-        const suggestedAmount = offerMatch ? offerMatch[1] : "0.001";
 
-        const amountStr = prompt("Enter amount of Sepolia ETH to lock in smart contract:", suggestedAmount);
+        const amountStr = prompt("Enter amount of Sepolia ETH to lock in smart contract:", "0.001");
         if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Confirm Funding in MetaMask...</span>";
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
         const tx = await contract.fundTask(activeTaskId, { value: ethers.parseEther(amountStr) });
         await tx.wait();
+
         await broadcast(activeTaskId, { type: "ESCROW_FUNDED", txHash: tx.hash, amount: amountStr, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Awaiting Funds";
@@ -604,42 +483,47 @@
     window.submitTask = async function() {
       if (typeof window.ethereum === 'undefined') return alert("MetaMask is required.");
       const link = prompt("Provide link to completed task:");
-      if (!link) return;
-      if (!safeUrl(link)) return alert("Please provide a valid http:// or https:// link.");
+      if(!link) return;
 
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Submitting Work to Smart Contract...</span>";
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
         const tx = await contract.submitTask(activeTaskId, link);
         await tx.wait();
+
         await broadcast(activeTaskId, { type: "TASK_SUBMITTED", data: link, txHash: tx.hash, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Funded (Working Phase)";
         alert(`Submission Error: ${err.reason || err.message}`);
       }
-    };
+    }
 
-    window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); };
-
-    window.releaseEscrow = async function() {
+    window.requestRevision = function() { broadcast(activeTaskId, { type: "TASK_REVISION", author: currentDid }); }
+    
+    window.releaseEscrow = async function() { 
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Approving Task on Smart Contract...</span>";
+        
         const tx = await contract.approveTask(activeTaskId);
         await tx.wait();
+        
         await broadcast(activeTaskId, { type: "ESCROW_RELEASED", txHash: tx.hash, author: currentDid });
         await broadcast('bazaar', { type: "RECEIPT", offerer: activeTaskAuthorDid, worker: activeWorkerDid });
-      } catch (err) {
+      } catch(err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Task Submitted (Review Phase)";
         alert(`Approval Error: ${err.reason || err.message}`);
       }
-    };
+    }
 
     window.claimFunds = async function() {
       if (typeof window.ethereum === 'undefined') return alert("MetaMask is not installed.");
@@ -647,37 +531,40 @@
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Pulling Funds from Contract...</span>";
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
+        
         const tx = await contract.claimFunds(activeTaskId);
         await tx.wait();
+
         await broadcast(activeTaskId, { type: "FUNDS_CLAIMED", txHash: tx.hash, author: currentDid });
       } catch (err) {
         document.getElementById('escrow-status-text').innerHTML = "Escrow: Funds Released (Awaiting Claim)";
         alert(`Claim Error: ${err.reason || err.message}`);
       }
-    };
+    }
 
     window.openDispute = function() {
-      if (confirm("Reject work and open dispute? Bystanders will vote.")) {
-        broadcast(activeTaskId, { type: "DISPUTE_OPEN", author: currentDid });
+      if(confirm("Reject work and open dispute? Bystanders will vote.")) {
+         broadcast(activeTaskId, { type: "DISPUTE_OPEN", author: currentDid });
       }
-    };
+    }
     window.castVote = function(verdict) {
-      if ((globalReputation[currentDid] || 0) < 1) return alert("You need a verified Reputation Score >= 1 to act as a juror.");
+      if ((globalReputation[currentDid] || 0) < 1) return alert("You need a Reputation Score >= 1 to act as a juror.");
       broadcast(activeTaskId, { type: "VOTE", verdict: verdict, author: currentDid });
-    };
+    }
 
+    // --- POLLING & REPUTATION LOGIC ---
     function updateMyReputationDisplay() {
-      if (currentDid) document.getElementById('display-reputation').innerText = globalReputation[currentDid] || 0;
+      if(currentDid) document.getElementById('display-reputation').innerText = globalReputation[currentDid] || 0;
     }
 
     async function triggerPoll() {
-      if (pollTimer) clearTimeout(pollTimer);
-      await flushPendingQueue();
+      if(pollTimer) clearTimeout(pollTimer);
       await fetchRoomData();
-      pollTimer = setTimeout(triggerPoll, 5000);
+      pollTimer = setTimeout(triggerPoll, 5000); 
     }
 
     async function fetchRoomData() {
@@ -685,34 +572,34 @@
       try {
         const res = await fetch(`${HOST}/${activeRoom}`);
         if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-
+        
         const text = await res.text();
-        const rawLines = text.split('\n').map(l => l.trim()).filter(l => l !== '' && !l.startsWith('#'));
-
-        // FIX (critical #2): verify every line's signature before using it for anything.
-        const verified = rawLines.map(verifySignedLine).filter(Boolean);
-
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '' && !l.startsWith('#'));
+        
         if (activeRoom === 'bazaar') {
           let repMap = {};
-          verified.forEach(p => {
-            if (p.payload.type === 'RECEIPT') {
-              if (!repMap[p.payload.offerer]) repMap[p.payload.offerer] = new Set();
-              if (!repMap[p.payload.worker]) repMap[p.payload.worker] = new Set();
-              repMap[p.payload.offerer].add(p.payload.worker);
-              repMap[p.payload.worker].add(p.payload.offerer);
-            }
+          lines.forEach(l => {
+             const start = l.indexOf('{');
+             if(start > -1) {
+               try {
+                 const p = JSON.parse(l.substring(start));
+                 if(p.payload && p.payload.type === 'RECEIPT') {
+                    if(!repMap[p.payload.offerer]) repMap[p.payload.offerer] = new Set();
+                    if(!repMap[p.payload.worker]) repMap[p.payload.worker] = new Set();
+                    repMap[p.payload.offerer].add(p.payload.worker);
+                    repMap[p.payload.worker].add(p.payload.offerer);
+                 }
+               } catch(e){}
+             }
           });
           Object.keys(repMap).forEach(k => globalReputation[k] = repMap[k].size);
           updateMyReputationDisplay();
         }
 
         streamDiv.innerHTML = "";
-        if (verified.length === 0) {
+        if (lines.length === 0) {
           if (activeRoom === 'bazaar') {
             streamDiv.innerHTML = `<p class="text-gray-400 text-center py-4">No active tasks found in the bazaar feed.</p>`;
-          } else {
-            // Brand-new task room: no messages yet, but the escrow panel still needs a valid initial state.
-            renderEscrowState("AWAITING_FUNDS", 0, 0);
           }
           return;
         }
@@ -720,149 +607,145 @@
         let state = "AWAITING_FUNDS";
         let voteRelease = new Set();
         let voteBurn = new Set();
+        
+        lines.forEach(line => {
+          try {
+            const jStart = line.indexOf('{');
+            if (jStart === -1) return; 
+            const p = JSON.parse(line.substring(jStart));
+            if (!p.payload || !p.payload.type) return;
+            
+            const isMe = currentDid && p.did === currentDid;
+            const nameDisp = p.payload.name || `...${p.did.slice(-6)}`;
+            const score = globalReputation[p.did] || 0;
+            const el = document.createElement('div');
 
-        verified.forEach(p => {
-          const isMe = currentDid && p.did === currentDid;
-          const nameDisp = p.payload.name || `...${p.did.slice(-6)}`;
-          const score = globalReputation[p.did] || 0;
-          const el = document.createElement('div');
-
-          if (activeRoom === 'bazaar' && p.payload.type === 'TASK_OFFER') {
-            el.className = "border border-indigo-500/20 bg-gray-900/60 p-4 rounded-xl mb-3 break-words";
-            el.innerHTML = `
-              <div class="flex justify-between items-start border-b border-indigo-500/20 pb-2 mb-2">
-                <span class="text-indigo-400 font-bold">${escapeHtml(nameDisp)} ${isMe ? '(YOU)' : ''} <span class="text-emerald-400 text-xs ml-2">★ Score: ${score}</span></span>
-              </div>
-              <div class="text-sm space-y-1">
-                <div><span class="text-indigo-300 font-bold">NEED:</span> <span class="text-gray-200">${escapeHtml(p.payload.need)}</span></div>
-                <div><span class="text-indigo-300 font-bold">OFFER:</span> <span class="text-gray-200">${escapeHtml(p.payload.offer)}</span></div>
-              </div>
-              <button data-task="${escapeHtml(p.payload.task_id)}" data-need="${escapeHtml(p.payload.need)}" data-offer="${escapeHtml(p.payload.offer)}" data-authorname="${escapeHtml(nameDisp)}" data-authordid="${escapeHtml(p.payload.author)}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded-lg font-bold shadow transition-colors">Negotiate</button>
-            `;
-            streamDiv.insertBefore(el, streamDiv.firstChild);
-          }
-          else if (activeRoom !== 'bazaar') {
-            if (p.payload.type === 'ESCROW_FUNDED') state = "FUNDED";
-            if (p.payload.type === 'TASK_SUBMITTED') { state = "SUBMITTED"; activeWorkerDid = p.did; }
-            if (p.payload.type === 'TASK_REVISION') state = "FUNDED";
-            if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
-            if (p.payload.type === 'ESCROW_RELEASED') state = "RELEASED";
-            if (p.payload.type === 'FUNDS_CLAIMED') state = "CLAIMED";
-            if (p.payload.type === 'ESCROW_BURNED') state = "BURNED";
-
-            if (p.payload.type === 'VOTE' && state === "DISPUTE" && score >= 1) {
-              if (p.payload.verdict === 'RELEASE') voteRelease.add(p.did);
-              if (p.payload.verdict === 'BURN') voteBurn.add(p.did);
-              if (voteRelease.size >= 2) state = "RELEASED";
-              if (voteBurn.size >= 2) state = "BURNED";
-            }
-
-            if (['ESCROW_FUNDED', 'TASK_SUBMITTED', 'TASK_REVISION', 'DISPUTE_OPEN', 'ESCROW_RELEASED', 'FUNDS_CLAIMED', 'ESCROW_BURNED', 'VOTE'].includes(p.payload.type)) {
-              el.className = `flex justify-center mb-4`;
-              let sysMsg = `System: ${escapeHtml(p.payload.type)}`;
-              if (p.payload.type === 'VOTE') sysMsg = `Bystander ${escapeHtml(nameDisp)} voted: ${escapeHtml(p.payload.verdict)}`;
-              if (p.payload.type === 'TASK_SUBMITTED') {
-                const link = safeUrl(p.payload.data);
-                sysMsg = link
-                  ? `✅ Task Submitted On-Chain: <a href="${link}" class="text-indigo-400 underline" target="_blank" rel="noopener noreferrer">${escapeHtml(link)}</a>`
-                  : `✅ Task Submitted On-Chain (link omitted: not a valid http/https URL)`;
+            if (activeRoom === 'bazaar' && p.payload.type === 'TASK_OFFER') {
+              el.className = "border border-indigo-500/20 bg-gray-900/60 p-4 rounded-xl mb-3 break-words";
+              el.innerHTML = `
+                <div class="flex justify-between items-start border-b border-indigo-500/20 pb-2 mb-2">
+                  <span class="text-indigo-400 font-bold">${nameDisp} ${isMe ? '(YOU)' : ''} <span class="text-emerald-400 text-xs ml-2">★ Score: ${score}</span></span>
+                </div>
+                <div class="text-sm space-y-1">
+                  <div><span class="text-indigo-300 font-bold">NEED:</span> <span class="text-gray-200">${p.payload.need}</span></div>
+                  <div><span class="text-indigo-300 font-bold">OFFER:</span> <span class="text-gray-200">${p.payload.offer}</span></div>
+                </div>
+                <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-authorname="${nameDisp}" data-authordid="${p.payload.author}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded-lg font-bold shadow transition-colors">Negotiate</button>
+              `;
+              streamDiv.insertBefore(el, streamDiv.firstChild); 
+            } 
+            else if (activeRoom !== 'bazaar') {
+              if (p.payload.type === 'ESCROW_FUNDED') state = "FUNDED";
+              if (p.payload.type === 'TASK_SUBMITTED') { 
+                state = "SUBMITTED"; 
+                activeWorkerDid = p.did; 
               }
-              if (p.payload.type === 'ESCROW_FUNDED') {
-                const txHash = String(p.payload.txHash || '');
-                sysMsg = `💰 Web3 Escrow Funded: ${escapeHtml(p.payload.amount)} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${encodeURIComponent(txHash)}" class="text-indigo-400 underline" target="_blank" rel="noopener noreferrer">${escapeHtml(txHash.slice(0, 10))}...</a>)`;
+              if (p.payload.type === 'TASK_REVISION') state = "FUNDED"; 
+              if (p.payload.type === 'DISPUTE_OPEN') state = "DISPUTE";
+              if (p.payload.type === 'ESCROW_RELEASED') state = "RELEASED";
+              if (p.payload.type === 'FUNDS_CLAIMED') state = "CLAIMED";
+              if (p.payload.type === 'ESCROW_BURNED') state = "BURNED";
+              
+              if (p.payload.type === 'VOTE' && state === "DISPUTE" && score >= 1) {
+                 if(p.payload.verdict === 'RELEASE') voteRelease.add(p.did);
+                 if(p.payload.verdict === 'BURN') voteBurn.add(p.did);
+                 if(voteRelease.size >= 2) state = "RELEASED";
+                 if(voteBurn.size >= 2) state = "BURNED";
               }
-              if (p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
-              if (p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
-              if (p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved On-Chain! Contract awaiting worker claim.`;
-              if (p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed from contract!`;
 
-              el.innerHTML = `<div class="px-4 py-1.5 rounded-lg bg-gray-900 border border-indigo-500/30 text-gray-300 text-xs text-center w-full shadow-sm">${sysMsg}</div>`;
-            } else if (p.payload.type === 'CHAT') {
-              el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
-              el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${escapeHtml(nameDisp)} (★${score})</span><div class="px-4 py-2 rounded-xl max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none shadow-md' : 'bg-gray-800 text-gray-100 rounded-bl-none border border-indigo-500/20'}">${escapeHtml(p.payload.message)}</div>`;
+              if (['ESCROW_FUNDED', 'TASK_SUBMITTED', 'TASK_REVISION', 'DISPUTE_OPEN', 'ESCROW_RELEASED', 'FUNDS_CLAIMED', 'ESCROW_BURNED', 'VOTE'].includes(p.payload.type)) {
+                 el.className = `flex justify-center mb-4`;
+                 let sysMsg = `System: ${p.payload.type}`;
+                 if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
+                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted On-Chain: <a href="${p.payload.data}" class="text-indigo-400 underline" target="_blank">${p.payload.data}</a>`;
+                 if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-indigo-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
+                 if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
+                 if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
+                 if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved On-Chain! Contract awaiting worker claim.`;
+                 if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed from contract!`;
+                 
+                 el.innerHTML = `<div class="px-4 py-1.5 rounded-lg bg-gray-900 border border-indigo-500/30 text-gray-300 text-xs text-center w-full shadow-sm">${sysMsg}</div>`;
+              } else if (p.payload.type === 'CHAT') {
+                 el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
+                 el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-xl max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none shadow-md' : 'bg-gray-800 text-gray-100 rounded-bl-none border border-indigo-500/20'}">${p.payload.message}</div>`;
+              }
+              streamDiv.appendChild(el);
             }
-            streamDiv.appendChild(el);
-          }
+          } catch(e) { } 
         });
 
         if (activeRoom !== 'bazaar') {
-          streamDiv.scrollTop = streamDiv.scrollHeight;
-          renderEscrowState(state, voteRelease.size, voteBurn.size);
+           streamDiv.scrollTop = streamDiv.scrollHeight;
+           renderEscrowState(state, voteRelease.size, voteBurn.size);
         }
 
       } catch (err) {
         if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Loading")) {
-          streamDiv.innerHTML = `<p class="text-red-400 text-sm text-center py-4">Network error: ${escapeHtml(err.message)}. Retrying...</p>`;
-        }
-        if (activeRoom !== 'bazaar') {
-          const statusText = document.getElementById('escrow-status-text');
-          statusText.innerHTML = "Escrow: Connection issue — retrying";
-          statusText.className = "text-sm font-bold text-red-400";
+           streamDiv.innerHTML = `<p class="text-red-400 text-sm text-center py-4">Network error: ${err.message}. Retrying...</p>`;
         }
       }
     }
 
     function renderEscrowState(state, relVotes, burnVotes) {
-      const statusText = document.getElementById('escrow-status-text');
-      const actionContainer = document.getElementById('escrow-action-container');
-      const disputePanel = document.getElementById('dispute-panel');
-      actionContainer.innerHTML = "";
-      disputePanel.classList.add('hidden');
+       const statusText = document.getElementById('escrow-status-text');
+       const actionContainer = document.getElementById('escrow-action-container');
+       const disputePanel = document.getElementById('dispute-panel');
+       actionContainer.innerHTML = ""; 
+       disputePanel.classList.add('hidden');
+       
+       const isOfferer = (currentDid === activeTaskAuthorDid);
+       const isLoggedIn = !!currentDid;
 
-      const isOfferer = (currentDid === activeTaskAuthorDid);
-      const isLoggedIn = !!currentDid;
-
-      if (state === "AWAITING_FUNDS") {
-        statusText.innerHTML = "Escrow: Awaiting Funds";
-        statusText.className = "text-sm font-bold text-yellow-400";
-        if (isOfferer && isLoggedIn) {
-          actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold flex items-center gap-2 shadow transition-colors">🦊 Connect MetaMask & Fund</button>`;
-        }
-      }
-      else if (state === "FUNDED") {
-        statusText.innerHTML = "Escrow: Funded (Working Phase)";
-        statusText.className = "text-sm font-bold text-indigo-400";
-        if (!isOfferer && isLoggedIn) {
-          actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold shadow transition-colors">Submit Task On-Chain</button>`;
-        }
-      }
-      else if (state === "SUBMITTED") {
-        statusText.innerHTML = "Escrow: Task Submitted (Review Phase)";
-        statusText.className = "text-sm font-bold text-purple-400";
-        if (isOfferer && isLoggedIn) {
-          actionContainer.innerHTML = `
-            <button onclick="requestRevision()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Request Revision</button>
-            <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Reject & Dispute</button>
-            <button onclick="releaseEscrow()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Approve Work</button>
-          `;
-        } else if (!isOfferer && isLoggedIn) {
-          actionContainer.innerHTML = `<span class="text-xs text-gray-400 italic">Waiting for offerer review...</span>`;
-        }
-      }
-      else if (state === "DISPUTE") {
-        statusText.innerHTML = "Escrow: DISPUTE ACTIVE";
-        statusText.className = "text-sm font-bold text-red-400";
-        disputePanel.classList.remove('hidden');
-        document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
-      }
-      else if (state === "RELEASED") {
-        statusText.innerHTML = "Escrow: Funds Released (Awaiting Claim)";
-        statusText.className = "text-sm font-bold text-emerald-400";
-        if (currentDid === activeWorkerDid && isLoggedIn) {
-          actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors shadow">Claim Funds from Contract</button>`;
-        }
-      }
-      else if (state === "CLAIMED") {
-        statusText.innerHTML = "Escrow: Complete & Claimed";
-        statusText.className = "text-sm font-bold text-gray-400";
-      }
-      else if (state === "BURNED") {
-        statusText.innerHTML = "Escrow: Terminated (Funds Burned)";
-        statusText.className = "text-sm font-bold text-gray-500";
-      }
+       if (state === "AWAITING_FUNDS") {
+          statusText.innerHTML = "Escrow: Awaiting Funds"; 
+          statusText.className = "text-sm font-bold text-yellow-400";
+          if (isOfferer && isLoggedIn) {
+            actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold flex items-center gap-2 shadow transition-colors">🦊 Connect MetaMask & Fund</button>`;
+          }
+       } 
+       else if (state === "FUNDED") {
+          statusText.innerHTML = "Escrow: Funded (Working Phase)"; 
+          statusText.className = "text-sm font-bold text-indigo-400";
+          if (!isOfferer && isLoggedIn) {
+            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold shadow transition-colors">Submit Task On-Chain</button>`;
+          }
+       }
+       else if (state === "SUBMITTED") {
+          statusText.innerHTML = "Escrow: Task Submitted (Review Phase)"; 
+          statusText.className = "text-sm font-bold text-purple-400";
+          if (isOfferer && isLoggedIn) {
+             actionContainer.innerHTML = `
+               <button onclick="requestRevision()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Request Revision</button>
+               <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Reject & Dispute</button>
+               <button onclick="releaseEscrow()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Approve Work</button>
+             `;
+          } else if (!isOfferer && isLoggedIn) {
+             actionContainer.innerHTML = `<span class="text-xs text-gray-400 italic">Waiting for offerer review...</span>`;
+          }
+       }
+       else if (state === "DISPUTE") {
+          statusText.innerHTML = "Escrow: DISPUTE ACTIVE"; 
+          statusText.className = "text-sm font-bold text-red-400";
+          disputePanel.classList.remove('hidden');
+          document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
+       }
+       else if (state === "RELEASED") {
+          statusText.innerHTML = "Escrow: Funds Released (Awaiting Claim)"; 
+          statusText.className = "text-sm font-bold text-emerald-400";
+          if (currentDid === activeWorkerDid && isLoggedIn) {
+             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors shadow">Claim Funds from Contract</button>`;
+          }
+       }
+       else if (state === "CLAIMED") {
+          statusText.innerHTML = "Escrow: Complete & Claimed"; 
+          statusText.className = "text-sm font-bold text-gray-400";
+       }
+       else if (state === "BURNED") {
+          statusText.innerHTML = "Escrow: Terminated (Funds Burned)"; 
+          statusText.className = "text-sm font-bold text-gray-500";
+       }
     }
 
-    updateQueueBanner();
     triggerPoll();
   </script>
 </body>
