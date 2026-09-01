@@ -27,6 +27,7 @@
       <p id="demo-banner" class="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block px-3 py-1.5">
         Prototype mode: connected to the live technocore.chat relay, still on Sepolia testnet.
       </p>
+      <p id="queue-banner" class="hidden text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block px-3 py-1.5"></p>
     </div>
 
     <div class="bg-gray-900/80 backdrop-blur-md border border-indigo-500/20 p-6 rounded-2xl shadow-2xl space-y-6">
@@ -404,10 +405,51 @@
 
     document.getElementById('logout-btn').onclick = deactivateIdentity;
 
+    // ---------- resilient broadcast: retries with backoff, queues on disk if the relay is down ----------
+    const PENDING_KEY = 'pendingBroadcasts';
+
+    function loadPendingQueue() {
+      try { return JSON.parse(localStorage.getItem(PENDING_KEY) || "[]"); } catch (e) { return []; }
+    }
+    function savePendingQueue(q) { localStorage.setItem(PENDING_KEY, JSON.stringify(q)); }
+
+    function buildBroadcastUrl(targetRoom, outer) {
+      return `${HOST}/${targetRoom}/say/did-${outer.did.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify(outer))}`;
+    }
+
+    async function sendOnce(targetRoom, outer) {
+      const res = await fetch(buildBroadcastUrl(targetRoom, outer));
+      if (!res.ok) throw new Error(await res.text());
+    }
+
+    function updateQueueBanner() {
+      const banner = document.getElementById('queue-banner');
+      const q = loadPendingQueue();
+      if (!banner) return;
+      if (q.length === 0) { banner.classList.add('hidden'); return; }
+      banner.classList.remove('hidden');
+      banner.innerText = `⚠️ ${q.length} message(s) couldn't reach the network yet. Retrying automatically...`;
+    }
+
+    async function flushPendingQueue() {
+      let q = loadPendingQueue();
+      if (q.length === 0) return;
+      const remaining = [];
+      for (const item of q) {
+        try {
+          await sendOnce(item.targetRoom, item.outer);
+        } catch (e) {
+          remaining.push(item);
+        }
+      }
+      savePendingQueue(remaining);
+      updateQueueBanner();
+      if (remaining.length < q.length) triggerPoll();
+    }
+
     async function broadcast(targetRoom, payload, statusElId = null) {
       if (!currentKeypair) return alert("Login required.");
 
-      // light client-side throttle so one tab can't spam the shared relay
       const now = Date.now();
       if (now - lastBroadcastAt < 800) return;
       lastBroadcastAt = now;
@@ -421,22 +463,37 @@
       payload.name = currentName;
       const msgStr = JSON.stringify(payload);
       const sig = bytesToBase64(nacl.sign.detached(new TextEncoder().encode(msgStr), currentKeypair.secretKey));
-      const url = `${HOST}/${targetRoom}/say/did-${currentDid.slice(-10).toLowerCase()}/${encodeURIComponent(JSON.stringify({ payload, signature: sig, did: currentDid }))}`;
+      const outer = { payload, signature: sig, did: currentDid };
 
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(await res.text());
-        if (statusEl) {
-          statusEl.className = "text-sm mt-3 text-center text-emerald-400 font-bold";
-          statusEl.innerText = "✅ Task Broadcasted Successfully!";
-          setTimeout(() => { statusEl.innerText = ""; }, 4000);
+      const delays = [500, 1500, 3000]; // ~5s of retrying before we give up and queue it
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          await sendOnce(targetRoom, outer);
+          if (statusEl) {
+            statusEl.className = "text-sm mt-3 text-center text-emerald-400 font-bold";
+            statusEl.innerText = "✅ Task Broadcasted Successfully!";
+            setTimeout(() => { statusEl.innerText = ""; }, 4000);
+          }
+          triggerPoll();
+          return;
+        } catch (err) {
+          if (attempt < delays.length) {
+            await new Promise(r => setTimeout(r, delays[attempt]));
+          } else {
+            // Give up retrying inline — queue it so it isn't lost, especially important
+            // for events tied to an already-confirmed on-chain transaction.
+            const q = loadPendingQueue();
+            q.push({ targetRoom, outer, queuedAt: Date.now() });
+            savePendingQueue(q);
+            updateQueueBanner();
+            if (statusEl) {
+              statusEl.className = "text-sm mt-3 text-center text-amber-400 font-bold";
+              statusEl.innerText = "⚠️ Network unreachable — queued, will retry automatically.";
+            } else {
+              alert("Network unreachable right now. Your message has been queued and will send automatically once the connection recovers.");
+            }
+          }
         }
-        triggerPoll();
-      } catch (err) {
-        if (statusEl) {
-          statusEl.className = "text-sm mt-3 text-center text-red-400 font-bold";
-          statusEl.innerText = "Failed to broadcast: " + err.message;
-        } else alert("Failed to broadcast: " + err.message);
       }
     }
 
@@ -618,6 +675,7 @@
 
     async function triggerPoll() {
       if (pollTimer) clearTimeout(pollTimer);
+      await flushPendingQueue();
       await fetchRoomData();
       pollTimer = setTimeout(triggerPoll, 5000);
     }
@@ -804,6 +862,7 @@
       }
     }
 
+    updateQueueBanner();
     triggerPoll();
   </script>
 </body>
