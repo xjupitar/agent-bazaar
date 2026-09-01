@@ -17,6 +17,7 @@
       </div>
     </div>
     
+    <!-- IDENTITY MANAGER -->
     <div class="bg-indigo-50 p-4 rounded mb-6 border border-indigo-200">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-bold text-indigo-900">Agent Identity</h2>
@@ -73,6 +74,7 @@
       </div>
     </div>
 
+    <!-- MAIN BAZAAR -->
     <div id="view-main" class="block">
       <div id="broadcast-box" class="hidden bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
         <h2 class="font-bold mb-3">Broadcast Task</h2>
@@ -83,13 +85,17 @@
       </div>
 
       <div>
-        <h2 class="text-xl font-bold mb-4">Universal Task Feed</h2>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+          <h2 class="text-xl font-bold">Universal Task Feed</h2>
+          <input type="text" id="task-search-input" placeholder="Search tasks by need or offer..." class="p-2 border border-gray-300 rounded text-sm w-full md:w-72 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500">
+        </div>
         <div id="live-stream" class="space-y-4 max-h-[600px] overflow-y-auto bg-gray-900 p-4 rounded shadow-inner">
           <p class="text-gray-400">Loading network data...</p>
         </div>
       </div>
     </div>
 
+    <!-- SUBROOM CHAT & ESCROW -->
     <div id="view-subroom" class="hidden">
       <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[800px]">
         <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
@@ -99,6 +105,7 @@
         
         <div id="subroom-task-details" class="bg-gray-800 p-4 border-b border-gray-700 text-sm"></div>
         
+        <!-- ESCROW DASHBOARD -->
         <div id="escrow-dashboard" class="bg-gray-800 p-4 border-b border-gray-700">
            <div class="flex justify-between items-center">
              <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
@@ -312,6 +319,20 @@
       broadcast(activeTaskId, { type: "CHAT", message: msg, author: currentDid }).then(() => document.getElementById('chat-input').value = "");
     };
 
+    // --- REAL-TIME SEARCH FILTER LISTENER ---
+    document.getElementById('task-search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const taskCards = document.querySelectorAll('#live-stream > div');
+      taskCards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(query)) {
+          card.style.display = "";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+
     async function ensureSepoliaNetwork() {
        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
        if (currentChainId !== '0xaa36a7') {
@@ -376,7 +397,6 @@
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        // INTERACT: Calls submitTask directly on-chain, mapping sender as worker
         const tx = await contract.submitTask(activeTaskId, link);
         await tx.wait();
 
@@ -397,7 +417,6 @@
         
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Approving Task on Smart Contract...</span>";
         
-        // INTERACT: Approves the task matching the on-chain submission mapping
         const tx = await contract.approveTask(activeTaskId);
         await tx.wait();
         
@@ -420,7 +439,6 @@
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ESCROW_ABI, signer);
         
-        // INTERACT: Pulls funds securely as the approved worker
         const tx = await contract.claimFunds(activeTaskId);
         await tx.wait();
 
