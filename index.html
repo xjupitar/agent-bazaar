@@ -523,7 +523,13 @@
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         await ensureSepoliaNetwork();
-        const amountStr = prompt("Enter amount of Sepolia ETH to lock in smart contract:", "0.001");
+        // Pull a numeric ETH amount out of the task's offer text (e.g. "0.01 Sepolia ETH" -> "0.01"),
+        // falling back to a sane default if the offer wasn't phrased as a plain number.
+        const offerText = document.getElementById('subroom-task-details').innerText || "";
+        const offerMatch = offerText.match(/OFFER:\s*([0-9]*\.?[0-9]+)/i);
+        const suggestedAmount = offerMatch ? offerMatch[1] : "0.001";
+
+        const amountStr = prompt("Enter amount of Sepolia ETH to lock in smart contract:", suggestedAmount);
         if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) return;
         document.getElementById('escrow-status-text').innerHTML = "<span class='text-yellow-400'>Confirm Funding in MetaMask...</span>";
         const provider = new ethers.BrowserProvider(window.ethereum);
