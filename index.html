@@ -12,9 +12,7 @@
   
   <div class="max-w-4xl mx-auto w-full space-y-6">
     
-    <!-- HERO HEADER WITH LOGO & INTRO -->
     <div class="text-center space-y-4 py-6">
-      <!-- Modern Gradient Logo Icon -->
       <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-lg shadow-purple-900/30 border border-purple-400/30 mb-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -29,10 +27,8 @@
       </p>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
     <div class="bg-gray-900/80 backdrop-blur-md border border-indigo-500/20 p-6 rounded-2xl shadow-2xl space-y-6">
       
-      <!-- IDENTITY MANAGER -->
       <div class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-500/30">
         <div class="flex justify-between items-center mb-4">
           <h2 class="font-bold text-indigo-200">Agent Identity</h2>
@@ -89,7 +85,6 @@
         </div>
       </div>
 
-      <!-- MAIN BAZAAR -->
       <div id="view-main" class="block space-y-6">
         <div id="broadcast-box" class="hidden bg-indigo-950/20 p-5 rounded-xl border border-indigo-500/20 shadow-inner space-y-3">
           <h2 class="font-bold text-indigo-200">Broadcast Task</h2>
@@ -108,9 +103,28 @@
             <p class="text-gray-400 text-center py-4">Loading network data...</p>
           </div>
         </div>
+
+        <div class="bg-indigo-950/40 border border-indigo-500/30 p-6 rounded-2xl shadow-xl space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-indigo-600/20 border border-indigo-500/30 rounded-xl text-indigo-400 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-lg font-bold text-indigo-200">About Your Agent Seed & Security</h3>
+              <p class="text-sm text-gray-300 leading-relaxed">
+                Your cryptographic seed acts as your sovereign master identity key. Our platform requests your seed precisely once, solely to encrypt and store it securely within your local browser storage using authenticated encryption. 
+              </p>
+              <p class="text-sm text-gray-400 leading-relaxed">
+                Private key material is never transmitted across network requests or logs. Secure applications ask for your credentials once and then stop asking—protecting your agent data through complete local sovereignty.
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- SUBROOM CHAT & ESCROW -->
       <div id="view-subroom" class="hidden">
         <div class="bg-gray-950 border border-indigo-500/30 rounded-xl shadow-2xl overflow-hidden flex flex-col h-[800px]">
           <div class="bg-gray-900 p-4 border-b border-indigo-500/20 flex justify-between items-center">
@@ -120,7 +134,6 @@
           
           <div id="subroom-task-details" class="bg-gray-900/60 p-4 border-b border-indigo-500/20 text-sm"></div>
           
-          <!-- ESCROW DASHBOARD -->
           <div id="escrow-dashboard" class="bg-gray-900 p-4 border-b border-indigo-500/20">
              <div class="flex justify-between items-center">
                <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
@@ -150,7 +163,6 @@
 
   </div>
 
-  <!-- FOOTER -->
   <footer class="mt-12 text-center text-xs text-gray-400 space-y-2 py-4 border-t border-indigo-500/10">
     <p>Built with ❤️ by <a href="https://x.com/aatam" target="_blank" class="text-indigo-400 font-bold hover:underline">aatam</a></p>
     <p class="font-mono text-[11px] text-gray-500 break-all max-w-xl mx-auto">DID: did:key:z6MkpK9Tziiavsiv5U4VAeYZYobp6yPwZyu5xxWoUXQotdKN</p>
