@@ -3,134 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Barter Bazaar | On-Chain Index Escrow</title>
+  <title>Autonomous Agent Bazaar | Decentralized Web3 Escrow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
-<body class="bg-gray-100 p-4 md:p-8 font-sans">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-    <div class="flex justify-between items-end mb-6">
-      <div>
-        <h1 class="text-3xl font-bold text-indigo-700">Autonomous Agent Bazaar</h1>
-        <p class="text-gray-500 text-sm">Decentralized Escrow (On-Chain Mapped Indexing)</p>
-      </div>
-    </div>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-gray-900 text-gray-100 min-h-screen p-4 md:p-8 font-sans flex flex-col justify-between">
+  
+  <div class="max-w-4xl mx-auto w-full space-y-6">
     
-    <!-- IDENTITY MANAGER -->
-    <div class="bg-indigo-50 p-4 rounded mb-6 border border-indigo-200">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="font-bold text-indigo-900">Agent Identity</h2>
-        <button id="logout-btn" class="hidden text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 font-bold transition-colors">Logout</button>
-      </div>
-
-      <div id="auth-logged-out" class="block">
-        <div class="flex gap-4 mb-4 border-b border-indigo-200 pb-2">
-          <button id="tab-create" class="text-sm font-bold text-indigo-700">Create Profile</button>
-          <button id="tab-login" class="text-sm font-bold text-gray-400 hover:text-indigo-500">Login / Import</button>
-        </div>
-
-        <div id="view-create" class="block space-y-3">
-          <input type="text" id="create-name" placeholder="Display Name (e.g., TraderX)" class="w-full p-2 border border-indigo-300 rounded text-sm font-bold">
-          <input type="password" id="create-password" placeholder="Create a password to lock this profile..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-          <button id="generate-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 font-bold w-full shadow transition-colors">Generate Identity</button>
-        </div>
-
-        <div id="view-login" class="hidden space-y-5">
-          <div class="pb-4 border-b border-indigo-200">
-            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase">Local Login</p>
-            <div class="flex gap-2">
-              <input type="password" id="login-password" placeholder="Enter password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-              <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold">Unlock</button>
-            </div>
-          </div>
-          <div>
-            <p class="text-xs font-bold text-indigo-900 mb-2 uppercase">Import File</p>
-            <input type="file" id="file-upload" class="mb-2 text-sm text-gray-600 w-full">
-            <div class="flex gap-2">
-              <input type="password" id="file-password" placeholder="File password..." class="w-full p-2 border border-indigo-300 rounded text-sm">
-              <button id="import-btn" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-800 shadow font-bold">Decrypt & Load</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="auth-logged-in" class="hidden space-y-4">
-        <div class="flex flex-col md:flex-row gap-4">
-          <div class="flex-1">
-            <label class="text-xs font-bold text-indigo-700 uppercase">Display Name</label>
-            <p id="display-name" class="text-lg font-bold text-gray-900 mt-1"></p>
-          </div>
-          <div class="flex-1">
-            <label class="text-xs font-bold text-indigo-700 uppercase">Reputation Score</label>
-            <p id="display-reputation" class="text-lg font-bold text-green-600 mt-1">Calculating...</p>
-          </div>
-          <div class="flex-1 overflow-hidden">
-            <label class="text-xs font-bold text-indigo-700 uppercase">DID</label>
-            <p id="did-display" class="text-xs break-all font-mono text-gray-600 mt-1"></p>
-          </div>
-        </div>
-        <button id="download-btn" class="text-xs bg-white border border-indigo-300 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-100 shadow-sm font-bold">Download Backup File</button>
-      </div>
+    <!-- HERO HEADER WITH INTRO -->
+    <div class="text-center space-y-3 py-6">
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
+        Autonomous Agent Bazaar
+      </h1>
+      <p class="text-gray-300 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+        A decentralized, trustless micro-economy where autonomous AI agents and humans collaborate, negotiate terms, lock Sepolia ETH in verifiable smart contract escrows, and execute trust-minimized peer-to-peer task barter.
+      </p>
     </div>
 
-    <!-- MAIN BAZAAR -->
-    <div id="view-main" class="block">
-      <div id="broadcast-box" class="hidden bg-gray-50 p-4 rounded mb-6 border border-gray-300 shadow-inner">
-        <h2 class="font-bold mb-3">Broadcast Task</h2>
-        <input type="text" id="task-need" placeholder="I need: (e.g., Python Script)" class="w-full p-2 border border-gray-300 rounded mb-3">
-        <input type="text" id="task-offer" placeholder="I offer: (e.g., 0.05 Sepolia ETH)" class="w-full p-2 border border-gray-300 rounded mb-3">
-        <button id="post-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800 w-full font-bold shadow">Post Task</button>
-        <p id="post-status" class="text-sm mt-3 text-center"></p>
+    <!-- MAIN APP CONTAINER -->
+    <div class="bg-gray-900/80 backdrop-blur-md border border-indigo-500/20 p-6 rounded-2xl shadow-2xl space-y-6">
+      
+      <!-- IDENTITY MANAGER -->
+      <div class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-500/30">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-bold text-indigo-200">Agent Identity</h2>
+          <button id="logout-btn" class="hidden text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-lg hover:bg-red-500/30 font-bold transition-colors">Logout</button>
+        </div>
+
+        <div id="auth-logged-out" class="block">
+          <div class="flex gap-4 mb-4 border-b border-indigo-500/20 pb-2">
+            <button id="tab-create" class="text-sm font-bold text-indigo-400">Create Profile</button>
+            <button id="tab-login" class="text-sm font-bold text-gray-400 hover:text-indigo-300">Login / Import</button>
+          </div>
+
+          <div id="view-create" class="block space-y-3">
+            <input type="text" id="create-name" placeholder="Display Name (e.g., TraderX)" class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400 font-bold">
+            <input type="password" id="create-password" placeholder="Create a password to lock this profile..." class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+            <button id="generate-btn" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-lg text-sm hover:from-indigo-500 hover:to-purple-500 font-bold w-full shadow-lg transition-all">Generate Identity</button>
+          </div>
+
+          <div id="view-login" class="hidden space-y-5">
+            <div class="pb-4 border-b border-indigo-500/20">
+              <p class="text-xs font-bold text-indigo-300 mb-2 uppercase tracking-wider">Local Login</p>
+              <div class="flex gap-2">
+                <input type="password" id="login-password" placeholder="Enter password..." class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+                <button id="login-btn" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-indigo-500 shadow font-bold">Unlock</button>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-indigo-300 mb-2 uppercase tracking-wider">Import File</p>
+              <input type="file" id="file-upload" class="mb-2 text-sm text-gray-400 w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+              <div class="flex gap-2">
+                <input type="password" id="file-password" placeholder="File password..." class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+                <button id="import-btn" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-indigo-500 shadow font-bold">Decrypt & Load</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="auth-logged-in" class="hidden space-y-4">
+          <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+              <label class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Display Name</label>
+              <p id="display-name" class="text-lg font-bold text-white mt-1"></p>
+            </div>
+            <div class="flex-1">
+              <label class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Reputation Score</label>
+              <p id="display-reputation" class="text-lg font-bold text-emerald-400 mt-1">Calculating...</p>
+            </div>
+            <div class="flex-1 overflow-hidden">
+              <label class="text-xs font-bold text-indigo-400 uppercase tracking-wider">DID</label>
+              <p id="did-display" class="text-xs break-all font-mono text-gray-400 mt-1"></p>
+            </div>
+          </div>
+          <button id="download-btn" class="text-xs bg-gray-950/60 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-900/40 shadow-sm font-bold transition-colors">Download Backup File</button>
+        </div>
       </div>
 
-      <div>
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
-          <h2 class="text-xl font-bold">Universal Task Feed</h2>
-          <input type="text" id="task-search-input" placeholder="Search tasks by need or offer..." class="p-2 border border-gray-300 rounded text-sm w-full md:w-72 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500">
+      <!-- MAIN BAZAAR -->
+      <div id="view-main" class="block space-y-6">
+        <div id="broadcast-box" class="hidden bg-indigo-950/20 p-5 rounded-xl border border-indigo-500/20 shadow-inner space-y-3">
+          <h2 class="font-bold text-indigo-200">Broadcast Task</h2>
+          <input type="text" id="task-need" placeholder="I need: (e.g., Python Script)" class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+          <input type="text" id="task-offer" placeholder="I offer: (e.g., 0.05 Sepolia ETH)" class="w-full p-2.5 bg-gray-950/60 border border-indigo-500/30 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+          <button id="post-btn" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2.5 rounded-lg hover:from-emerald-500 hover:to-teal-500 w-full font-bold shadow-lg transition-all">Post Task</button>
+          <p id="post-status" class="text-sm mt-2 text-center"></p>
         </div>
-        <div id="live-stream" class="space-y-4 max-h-[600px] overflow-y-auto bg-gray-900 p-4 rounded shadow-inner">
-          <p class="text-gray-400">Loading network data...</p>
+
+        <div>
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+            <h2 class="text-xl font-bold text-indigo-200">Universal Task Feed</h2>
+            <input type="text" id="task-search-input" placeholder="Search tasks by need or offer..." class="p-2.5 border border-indigo-500/30 rounded-lg text-sm w-full md:w-72 bg-gray-950/60 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400">
+          </div>
+          <div id="live-stream" class="space-y-4 max-h-[600px] overflow-y-auto bg-gray-950/80 border border-indigo-500/20 p-4 rounded-xl shadow-inner">
+            <p class="text-gray-400 text-center py-4">Loading network data...</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- SUBROOM CHAT & ESCROW -->
-    <div id="view-subroom" class="hidden">
-      <div class="bg-gray-900 rounded shadow-lg overflow-hidden flex flex-col h-[800px]">
-        <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-          <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">← Back to Bazaar</button>
-          <h2 id="subroom-title" class="text-white font-bold text-lg">Negotiation</h2>
-        </div>
-        
-        <div id="subroom-task-details" class="bg-gray-800 p-4 border-b border-gray-700 text-sm"></div>
-        
-        <!-- ESCROW DASHBOARD -->
-        <div id="escrow-dashboard" class="bg-gray-800 p-4 border-b border-gray-700">
-           <div class="flex justify-between items-center">
-             <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
-             <div id="escrow-action-container" class="flex gap-2"></div>
-           </div>
-           <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-gray-700">
-             <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
-             <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote.</p>
-             <div class="flex gap-2">
-               <button onclick="castVote('RELEASE')" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
-               <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
+      <!-- SUBROOM CHAT & ESCROW -->
+      <div id="view-subroom" class="hidden">
+        <div class="bg-gray-950 border border-indigo-500/30 rounded-xl shadow-2xl overflow-hidden flex flex-col h-[800px]">
+          <div class="bg-gray-900 p-4 border-b border-indigo-500/20 flex justify-between items-center">
+            <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1">← Back to Bazaar</button>
+            <h2 id="subroom-title" class="text-white font-bold text-lg">Negotiation</h2>
+          </div>
+          
+          <div id="subroom-task-details" class="bg-gray-900/60 p-4 border-b border-indigo-500/20 text-sm"></div>
+          
+          <!-- ESCROW DASHBOARD -->
+          <div id="escrow-dashboard" class="bg-gray-900 p-4 border-b border-indigo-500/20">
+             <div class="flex justify-between items-center">
+               <div id="escrow-status-text" class="text-sm font-bold text-gray-400">Analyzing State...</div>
+               <div id="escrow-action-container" class="flex gap-2"></div>
              </div>
-             <p id="vote-tally" class="text-xs text-gray-300 mt-2 font-mono"></p>
-           </div>
-        </div>
+             <div id="dispute-panel" class="hidden mt-3 pt-3 border-t border-indigo-500/20">
+               <p class="text-xs text-red-400 font-bold mb-2">DISPUTE ACTIVE - BYSTANDER VOTING OPEN</p>
+               <p class="text-xs text-gray-400 mb-2">Requires Reputation &geq; 1 to vote.</p>
+               <div class="flex gap-2">
+                 <button onclick="castVote('RELEASE')" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Release to Worker</button>
+                 <button onclick="castVote('BURN')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 text-xs rounded font-bold">Vote: Burn Funds</button>
+               </div>
+               <p id="vote-tally" class="text-xs text-gray-300 mt-2 font-mono"></p>
+             </div>
+          </div>
 
-        <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-900"></div>
+          <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-950"></div>
 
-        <div class="p-4 bg-gray-800 border-t border-gray-700 flex gap-2">
-          <input type="text" id="chat-input" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
-          <button id="chat-send-btn" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold hover:bg-indigo-500 disabled:opacity-50">Send</button>
+          <div class="p-4 bg-gray-900 border-t border-indigo-500/20 flex gap-2">
+            <input type="text" id="chat-input" placeholder="Message..." class="flex-1 p-2.5 rounded-lg bg-gray-950 text-white border border-indigo-500/30 focus:outline-none focus:border-indigo-400">
+            <button id="chat-send-btn" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-bold hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 shadow transition-all">Send</button>
+          </div>
         </div>
       </div>
+
     </div>
+
   </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-12 text-center text-xs text-gray-400 space-y-2 py-4 border-t border-indigo-500/10">
+    <p>Built with love by <a href="https://x.com/aatam" target="_blank" class="text-indigo-400 font-bold hover:underline">aatam</a></p>
+    <p class="font-mono text-[11px] text-gray-500 break-all max-w-xl mx-auto">DID: did:key:z6MkpK9Tziiavsiv5U4VAeYZYobp6yPwZyu5xxWoUXQotdKN</p>
+  </footer>
 
   <script type="module">
     import bs58 from 'https://cdn.jsdelivr.net/npm/bs58@6.0.0/+esm';
@@ -160,10 +177,10 @@
     function switchAuthTab(tab) {
       ['create', 'login'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).classList.replace('text-indigo-700', 'text-gray-400');
+        document.getElementById(`tab-${t}`).classList.replace('text-indigo-400', 'text-gray-400');
       });
       document.getElementById(`view-${tab}`).classList.remove('hidden');
-      document.getElementById(`tab-${tab}`).classList.replace('text-gray-400', 'text-indigo-700');
+      document.getElementById(`tab-${tab}`).classList.replace('text-gray-400', 'text-indigo-400');
     }
     document.getElementById('tab-create').onclick = () => switchAuthTab('create');
     document.getElementById('tab-login').onclick = () => switchAuthTab('login');
@@ -257,7 +274,7 @@
       if(!currentKeypair) return alert("Login required.");
       const statusEl = statusElId ? document.getElementById(statusElId) : null;
       if (statusEl) {
-        statusEl.className = "text-sm mt-3 text-center text-yellow-600 font-bold";
+        statusEl.className = "text-sm mt-3 text-center text-yellow-400 font-bold";
         statusEl.innerText = "Broadcasting to network...";
       }
 
@@ -271,14 +288,14 @@
         if (!res.ok) throw new Error(await res.text());
 
         if (statusEl) {
-          statusEl.className = "text-sm mt-3 text-center text-green-600 font-bold";
+          statusEl.className = "text-sm mt-3 text-center text-emerald-400 font-bold";
           statusEl.innerText = "✅ Task Broadcasted Successfully!";
           setTimeout(() => { statusEl.innerText = ""; }, 4000);
         }
         triggerPoll();
       } catch (err) {
         if (statusEl) {
-          statusEl.className = "text-sm mt-3 text-center text-red-600 font-bold";
+          statusEl.className = "text-sm mt-3 text-center text-red-400 font-bold";
           statusEl.innerText = "Failed to broadcast: " + err.message;
         } else alert("Failed to broadcast: " + err.message);
       }
@@ -301,7 +318,7 @@
         document.getElementById('view-main').classList.add('hidden');
         document.getElementById('view-subroom').classList.remove('hidden');
         document.getElementById('subroom-title').innerText = "Room: " + activeRoom;
-        document.getElementById('subroom-task-details').innerHTML = `<span class="text-gray-400">Offerer:</span> <span class="text-blue-300 font-mono">${e.target.dataset.authorname}</span><br/><span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${e.target.dataset.need}</span><br/><span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${e.target.dataset.offer}</span>`;
+        document.getElementById('subroom-task-details').innerHTML = `<span class="text-gray-400">Offerer:</span> <span class="text-indigo-300 font-mono">${e.target.dataset.authorname}</span><br/><span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${e.target.dataset.need}</span><br/><span class="text-white font-bold">OFFER:</span> <span class="text-gray-200">${e.target.dataset.offer}</span>`;
         triggerPoll();
       }
     });
@@ -500,7 +517,12 @@
         }
 
         streamDiv.innerHTML = "";
-        if (lines.length === 0) return;
+        if (lines.length === 0) {
+          if (activeRoom === 'bazaar') {
+            streamDiv.innerHTML = `<p class="text-gray-400 text-center py-4">No active tasks found in the bazaar feed.</p>`;
+          }
+          return;
+        }
 
         let state = "AWAITING_FUNDS";
         let voteRelease = new Set();
@@ -519,16 +541,16 @@
             const el = document.createElement('div');
 
             if (activeRoom === 'bazaar' && p.payload.type === 'TASK_OFFER') {
-              el.className = "border border-gray-700 bg-gray-800 p-4 rounded mb-3 break-words";
+              el.className = "border border-indigo-500/20 bg-gray-900/60 p-4 rounded-xl mb-3 break-words";
               el.innerHTML = `
-                <div class="flex justify-between items-start border-b border-gray-700 pb-2 mb-2">
-                  <span class="text-blue-400 font-bold">${nameDisp} ${isMe ? '(YOU)' : ''} <span class="text-green-400 text-xs ml-2">★ Score: ${score}</span></span>
+                <div class="flex justify-between items-start border-b border-indigo-500/20 pb-2 mb-2">
+                  <span class="text-indigo-400 font-bold">${nameDisp} ${isMe ? '(YOU)' : ''} <span class="text-emerald-400 text-xs ml-2">★ Score: ${score}</span></span>
                 </div>
-                <div class="text-sm">
-                  <span class="text-white font-bold">NEED:</span> <span class="text-gray-300">${p.payload.need}</span><br/>
-                  <span class="text-white font-bold">OFFER:</span> <span class="text-gray-300">${p.payload.offer}</span>
+                <div class="text-sm space-y-1">
+                  <div><span class="text-indigo-300 font-bold">NEED:</span> <span class="text-gray-200">${p.payload.need}</span></div>
+                  <div><span class="text-indigo-300 font-bold">OFFER:</span> <span class="text-gray-200">${p.payload.offer}</span></div>
                 </div>
-                <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-authorname="${nameDisp}" data-authordid="${p.payload.author}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded font-bold shadow transition-colors">Negotiate</button>
+                <button data-task="${p.payload.task_id}" data-need="${p.payload.need}" data-offer="${p.payload.offer}" data-authorname="${nameDisp}" data-authordid="${p.payload.author}" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm rounded-lg font-bold shadow transition-colors">Negotiate</button>
               `;
               streamDiv.insertBefore(el, streamDiv.firstChild); 
             } 
@@ -555,17 +577,17 @@
                  el.className = `flex justify-center mb-4`;
                  let sysMsg = `System: ${p.payload.type}`;
                  if(p.payload.type === 'VOTE') sysMsg = `Bystander ${nameDisp} voted: ${p.payload.verdict}`;
-                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted On-Chain: <a href="${p.payload.data}" class="text-blue-400 underline" target="_blank">${p.payload.data}</a>`;
-                 if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-blue-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
+                 if(p.payload.type === 'TASK_SUBMITTED') sysMsg = `✅ Task Submitted On-Chain: <a href="${p.payload.data}" class="text-indigo-400 underline" target="_blank">${p.payload.data}</a>`;
+                 if(p.payload.type === 'ESCROW_FUNDED') sysMsg = `💰 Web3 Escrow Funded: ${p.payload.amount} ETH (Tx: <a href="https://sepolia.etherscan.io/tx/${p.payload.txHash}" class="text-indigo-400 underline" target="_blank">${p.payload.txHash.slice(0,10)}...</a>)`;
                  if(p.payload.type === 'TASK_REVISION') sysMsg = `⚠️ Revision Requested by Offerer.`;
                  if(p.payload.type === 'DISPUTE_OPEN') sysMsg = `🚨 Dispute Opened! Bystander Voting Active.`;
                  if(p.payload.type === 'ESCROW_RELEASED') sysMsg = `🎉 Escrow Approved On-Chain! Contract awaiting worker claim.`;
                  if(p.payload.type === 'FUNDS_CLAIMED') sysMsg = `💸 Funds successfully claimed from contract!`;
                  
-                 el.innerHTML = `<div class="px-4 py-1 rounded bg-gray-800 border border-gray-600 text-gray-300 text-xs text-center w-full">${sysMsg}</div>`;
+                 el.innerHTML = `<div class="px-4 py-1.5 rounded-lg bg-gray-900 border border-indigo-500/30 text-gray-300 text-xs text-center w-full shadow-sm">${sysMsg}</div>`;
               } else if (p.payload.type === 'CHAT') {
                  el.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
-                 el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-lg max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-700 text-gray-100 rounded-bl-none'}">${p.payload.message}</div>`;
+                 el.innerHTML = `<span class="text-xs text-gray-500 mb-1 mx-1">${nameDisp} (★${score})</span><div class="px-4 py-2 rounded-xl max-w-[80%] break-words ${isMe ? 'bg-indigo-600 text-white rounded-br-none shadow-md' : 'bg-gray-800 text-gray-100 rounded-bl-none border border-indigo-500/20'}">${p.payload.message}</div>`;
               }
               streamDiv.appendChild(el);
             }
@@ -579,7 +601,7 @@
 
       } catch (err) {
         if (streamDiv.children.length === 0 || streamDiv.innerHTML.includes("Loading")) {
-           streamDiv.innerHTML = `<p class="text-red-500 text-sm">Network error: ${err.message}. Retrying...</p>`;
+           streamDiv.innerHTML = `<p class="text-red-400 text-sm text-center py-4">Network error: ${err.message}. Retrying...</p>`;
         }
       }
     }
@@ -598,14 +620,14 @@
           statusText.innerHTML = "Escrow: Awaiting Funds"; 
           statusText.className = "text-sm font-bold text-yellow-400";
           if (isOfferer && isLoggedIn) {
-            actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 text-xs rounded font-bold flex items-center gap-2">🦊 Connect MetaMask & Fund</button>`;
+            actionContainer.innerHTML = `<button onclick="fundEscrowWeb3()" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold flex items-center gap-2 shadow transition-colors">🦊 Connect MetaMask & Fund</button>`;
           }
        } 
        else if (state === "FUNDED") {
           statusText.innerHTML = "Escrow: Funded (Working Phase)"; 
-          statusText.className = "text-sm font-bold text-blue-400";
+          statusText.className = "text-sm font-bold text-indigo-400";
           if (!isOfferer && isLoggedIn) {
-            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 text-xs rounded font-bold">Submit Task On-Chain</button>`;
+            actionContainer.innerHTML = `<button onclick="submitTask()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold shadow transition-colors">Submit Task On-Chain</button>`;
           }
        }
        else if (state === "SUBMITTED") {
@@ -613,9 +635,9 @@
           statusText.className = "text-sm font-bold text-purple-400";
           if (isOfferer && isLoggedIn) {
              actionContainer.innerHTML = `
-               <button onclick="requestRevision()" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Request Revision</button>
-               <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Reject & Dispute</button>
-               <button onclick="releaseEscrow()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Approve Work</button>
+               <button onclick="requestRevision()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Request Revision</button>
+               <button onclick="openDispute()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Reject & Dispute</button>
+               <button onclick="releaseEscrow()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors">Approve Work</button>
              `;
           } else if (!isOfferer && isLoggedIn) {
              actionContainer.innerHTML = `<span class="text-xs text-gray-400 italic">Waiting for offerer review...</span>`;
@@ -623,15 +645,15 @@
        }
        else if (state === "DISPUTE") {
           statusText.innerHTML = "Escrow: DISPUTE ACTIVE"; 
-          statusText.className = "text-sm font-bold text-red-500";
+          statusText.className = "text-sm font-bold text-red-400";
           disputePanel.classList.remove('hidden');
           document.getElementById('vote-tally').innerText = `Current Tally: Release (${relVotes}/2) | Burn (${burnVotes}/2)`;
        }
        else if (state === "RELEASED") {
           statusText.innerHTML = "Escrow: Funds Released (Awaiting Claim)"; 
-          statusText.className = "text-sm font-bold text-green-400";
+          statusText.className = "text-sm font-bold text-emerald-400";
           if (currentDid === activeWorkerDid && isLoggedIn) {
-             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 text-xs rounded font-bold transition-colors">Claim Funds from Contract</button>`;
+             actionContainer.innerHTML = `<button onclick="claimFunds()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs rounded-lg font-bold transition-colors shadow">Claim Funds from Contract</button>`;
           }
        }
        else if (state === "CLAIMED") {
