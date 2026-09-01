@@ -458,6 +458,11 @@
         document.getElementById('view-main').classList.add('hidden');
         document.getElementById('view-subroom').classList.remove('hidden');
         document.getElementById('subroom-title').innerText = "Room: " + activeRoom;
+        document.getElementById('escrow-status-text').innerHTML = "Analyzing State...";
+        document.getElementById('escrow-status-text').className = "text-sm font-bold text-gray-400";
+        document.getElementById('escrow-action-container').innerHTML = "";
+        document.getElementById('dispute-panel').classList.add('hidden');
+        document.getElementById('chat-stream').innerHTML = "";
         document.getElementById('subroom-task-details').innerHTML =
           `<span class="text-gray-400">Offerer:</span> <span class="text-indigo-300 font-mono">${escapeHtml(e.target.dataset.authorname)}</span><br/>` +
           `<span class="text-white font-bold">NEED:</span> <span class="text-gray-200">${escapeHtml(e.target.dataset.need)}</span><br/>` +
@@ -641,6 +646,9 @@
         if (verified.length === 0) {
           if (activeRoom === 'bazaar') {
             streamDiv.innerHTML = `<p class="text-gray-400 text-center py-4">No active tasks found in the bazaar feed.</p>`;
+          } else {
+            // Brand-new task room: no messages yet, but the escrow panel still needs a valid initial state.
+            renderEscrowState("AWAITING_FUNDS", 0, 0);
           }
           return;
         }
